@@ -60,4 +60,8 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-void error_handling(char *message) { printf("\nERROR: %s\n", message); }
+void error_handling(char *message) {
+  fputs(message, stderr);
+  fputc('\n', stderr);
+  exit(1);
+}
