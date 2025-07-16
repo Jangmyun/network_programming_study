@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
   }
   file_selected--;
   writen(sock, &file_selected, sizeof(int));
+  sleep(1);
 
   close(sock);
   return 0;
