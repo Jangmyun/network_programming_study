@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
   }
 
   clnt_adr_sz = sizeof(clnt_adr);
-  clnt_sd = accept(serv_sock, (struct sockaddr*)&clnt_adr, &clnt_adr_sz);
+  clnt_sd = accept(serv_sd, (struct sockaddr*)&clnt_adr, &clnt_adr_sz);
 
   while(1){
     read_cnt = fread((void*)buf, 1, BUF_SIZE, fp);
