@@ -16,6 +16,8 @@ typedef struct {
 } FileInfo;
 
 void error_handling(char *message);
+ssize_t readn(int fd, void *data, size_t n);
+ssize_t writen(int fd, const void *data, size_t n);
 
 int main(int argc, char *argv[]) {
   int sock = 0;
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]) {
   FileInfo fileinfo;
   printf("\n<Read File Informations>\n");
   for (int i = 0; i < filecount; i++) {
-    read_cnt = read(sock, &fileinfo, sizeof(FileInfo));
+    read_cnt = readn(sock, &fileinfo, sizeof(FileInfo));
 #ifdef DEBUG
     printf("%d: %s | %ldbytes | FILEREAD:%d\n", i + 1, fileinfo.filename,
            fileinfo.size, read_cnt);
@@ -85,4 +87,46 @@ void error_handling(char *message) {
   fputs(message, stderr);
   fputc('\n', stderr);
   exit(1);
+}
+
+ssize_t readn(int fd, void *data, size_t n) {
+  size_t left;
+  size_t read_n;
+
+  left = n;
+
+  while (left > 0) {
+    if ((read_n = read(fd, data, left)) < 0) {
+      if (left == n)
+        return -1;
+      else
+        break;
+    } else if (read_n == 0)
+      break;
+    left -= read_n;
+    data += read_n;
+  }
+
+  return n - left;
+}
+
+ssize_t writen(int fd, const void *data, size_t n) {
+  size_t left;
+  ssize_t written_n;
+
+  left = n;
+
+  while (left > 0) {
+    if ((written_n = write(fd, data, left)) < 0) {
+      if (left == n)
+        return -1;
+      else
+        break;
+    } else if (written_n == 0)
+      break;
+    left -= written_n;
+    data += written_n;
+  }
+
+  return n - left;
 }
