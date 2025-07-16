@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
   }
   filecount = count_files(".");
   printf("filecount = %d", filecount);
-  write(clnt_sock, filecount, sizeof(int));
+  write(clnt_sock, &filecount, sizeof(int));
 
   close(clnt_sock);
 
