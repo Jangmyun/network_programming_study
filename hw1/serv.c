@@ -53,21 +53,20 @@ int main(int argc, char *argv[]) {
 
   clnt_addr_size = sizeof(clnt_addr);
 
-  while (1) {
-    clnt_sock =
-        accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-    if (clnt_sock == -1)
-      continue;
-    else
-      printf("Connected client\n");
-
-    filecount = count_files(".");
-    printf("filecount = %d", filecount);
-    write(clnt_sock, filecount, sizeof(int));
-
-    close(clnt_sock);
+  clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+  if (clnt_sock == -1) {
+    perror("accept() error");
+    exit(1);
+  } else {
+    printf("Connected client\n");
   }
+  filecount = count_files(".");
+  printf("filecount = %d", filecount);
+  write(clnt_sock, filecount, sizeof(int));
 
+  close(clnt_sock);
+
+  close(serv_sock);
   return 0;
 }
 
