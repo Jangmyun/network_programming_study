@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
 
   read(sock, &filecount, sizeof(int));
-  if (filecount == -1) {
+  if (filecount < 1) {
     printf("filecount invalid\n");
     close(sock);
     exit(1);
@@ -52,12 +52,26 @@ int main(int argc, char *argv[]) {
   printf("filecount = %d\n", filecount);
 #endif
 
+  int file_selected = 0;
+  long file_size = 0;
   FileInfo fileinfo;
   printf("\n<Read File Informations>\n");
   for (int i = 0; i < filecount; i++) {
     read(sock, &fileinfo, sizeof(FileInfo));
-    printf("%d: %s | %ld\n", i + 1, fileinfo.filename, fileinfo.size);
+    printf("%d: %s | %ldbytes\n", i + 1, fileinfo.filename, fileinfo.size);
   }
+
+  while (1) {
+    fputs("Select file number to receive > ", stdout);
+    fgets(buf, BUF_SIZE, stdin);
+    file_selected = atoi(buf);
+    if (file_selected > 0) {
+      break;
+    }
+    fputs("Input invalid.\n", stdout);
+  }
+
+  write(sock, &file_selected, sizeof(int));
 
   close(sock);
   return 0;
