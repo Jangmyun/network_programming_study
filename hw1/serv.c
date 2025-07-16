@@ -73,33 +73,37 @@ int main(int argc, char *argv[]) {
     else
       printf("Connected client\n");
 
-    FileInfo *fileinfos = NULL;
-    fileinfos = read_files(".", (filecount = count_files(".")));
+    while (1) {
+      FileInfo *fileinfos = NULL;
+      fileinfos = read_files(".", (filecount = count_files(".")));
 #ifdef DEBUG
-    printf("filecount = %d\n", filecount);
+      printf("filecount = %d\n", filecount);
 #endif
-    writen(clnt_sock, &filecount, sizeof(int));
+      writen(clnt_sock, &filecount, sizeof(int));
 
-    for (int i = 0; i < filecount; i++) {
-      writen(clnt_sock, &fileinfos[i], sizeof(FileInfo));
+      for (int i = 0; i < filecount; i++) {
+        writen(clnt_sock, &fileinfos[i], sizeof(FileInfo));
 #ifdef DEBUG
-      printf("SEND FILEINFO: filename=%s, size=%ld\n", fileinfos[i].filename,
-             fileinfos[i].size);
+        printf("SEND FILEINFO: filename=%s, size=%ld\n", fileinfos[i].filename,
+               fileinfos[i].size);
 #endif
+      }
+
+      // 파일 번호 수신
+      int file_selected = 0;
+      readn(clnt_sock, &file_selected, sizeof(int));
+#ifdef DEBUG
+      printf("file_selected = %d", file_selected);
+#endif
+
+      // 계속 반복할지 수신
+      int cond = 0;
+      readn(clnt_sock, &cond, sizeof(int));
+
+      free(fileinfos);
     }
 
-    int file_selected = 0;
-#ifdef DEBUG
-    printf("read file_selected\n");
-#endif
-    // read file_selected from client;
-    readn(clnt_sock, &file_selected, sizeof(int));
-#ifdef DEBUG
-    printf("file_selected = %d", file_selected);
-#endif
-
     close(clnt_sock);
-    free(fileinfos);
   }
 
   close(serv_sock);
