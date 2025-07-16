@@ -62,18 +62,33 @@ int main(int argc, char *argv[]) {
 
   clnt_addr_size = sizeof(clnt_addr);
 
-  clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-  if (clnt_sock == -1) {
-    perror("accept() error");
-    exit(1);
-  } else {
-    printf("Connected client\n");
-  }
-  filecount = count_files(".");
-  printf("filecount = %d", filecount);
-  write(clnt_sock, &filecount, sizeof(int));
+  // iterate file transfer
+  while (1) {
+    clnt_sock =
+        accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+    if (clnt_sock == -1)
+      continue;
+    else
+      printf("Connected client\n");
 
-  close(clnt_sock);
+    FileInfo *fileinfos = NULL;
+    fileinfos = read_files(".", (filecount = count_files(".")));
+#ifdef DEBUG
+    printf("filecount = %d\n", filecount);
+#endif
+    write(clnt_sock, &filecount, sizeof(int));
+
+    for (int i = 0; i < filecount; i++) {
+      write(clnt_sock, &fileinfos[i], sizeof(FileInfo));
+#ifdef DEBUG
+      printf("SEND FILEINFO: filename=%s, size=%l\n", fileinfos[i].filename,
+             fileinfos[i].size);
+#endif
+    }
+
+    close(clnt_sock);
+    free(fileinfos);
+  }
 
   close(serv_sock);
   return 0;
