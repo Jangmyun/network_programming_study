@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
   while(1){
     read_cnt = fread((void*)buf, 1, BUF_SIZE, fp);
     if(read_cnt < BUF_SIZE){
-      write(clnt_sd, buf, BUF_SIZE);
+      write(clnt_sd, buf, read_cnt);
       break;
     }
     write(clnt_sd, buf, BUF_SIZE);
