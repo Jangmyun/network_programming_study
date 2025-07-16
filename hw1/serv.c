@@ -12,22 +12,11 @@ void error_handling(char *message);
 int count_files(char *path);
 
 int main(int argc, char *argv[]) {
-  int server_socket = 0;
-  int client_socket = 0;
+  int serv_sock = 0, clnt_sock = 0;
   char buf[BUF_SIZE];
   int str_len = 0;
-
-  DIR *directory = NULL;
-  struct dirent *entry = NULL;
-  struct stat st;
-
+  int filename_size = 0;
   int currBuffSize = 0;
-
-  directory = opendir(".");
-  if (directory == NULL) {
-    perror("opendir() failed");
-    exit(1);
-  }
 
   struct sockaddr_in serv_addr, clnt_addr;
   socklen_t clnt_addr_size;
@@ -36,6 +25,30 @@ int main(int argc, char *argv[]) {
     printf("Usage: %s <port>\n", argv[0]);
     exit(1);
   }
+
+  int filecount = count_files(".", &filename_size);
+
+#ifdef DEBUG
+  printf("filecount=%d, filename_size=%d\n", filecount, filename_size);
+#endif
+
+  serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+  memset(&serv_addr, 0, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  serv_addr.sin_port = htons(atoi(argv[1]));
+
+  if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+    perror("bind() error");
+  }
+
+  if (listen(serv_sock, 5) == -1) {
+    perror("listen() error");
+  }
+
+  clnt_addr_size = sizeof(clnt_addr);
+  clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
 }
 
 void error_handling(char *message) {
