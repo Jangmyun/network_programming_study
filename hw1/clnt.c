@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
       printf("%d: %s | %ldbytes\n", i + 1, fileinfo.filename, fileinfo.size);
     }
 
+    // 파일 번호 입력받기
     int file_selected = 0;
-
     while (1) {
       fputs("Select file number to receive > ", stdout);
       fgets(buf, BUF_SIZE, stdin);
@@ -90,12 +90,16 @@ int main(int argc, char *argv[]) {
     fputs("Keep going? (y / n) > ", stdout);
     fgets(buf, BUF_SIZE, stdin);
     if (strcmp(buf, "y")) {
+      printf("no iteration\n");
       cond = 0;
       writen(sock, &cond, sizeof(int));
       break;
     }
+    printf("Keep go!\n");
     writen(sock, &cond, sizeof(int));
   }  // while
+
+  printf("Bye!\n");
 
   close(sock);
   return 0;

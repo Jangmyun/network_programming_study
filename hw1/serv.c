@@ -99,12 +99,20 @@ int main(int argc, char *argv[]) {
       // 계속 반복할지 수신
       int cond = 0;
       readn(clnt_sock, &cond, sizeof(int));
+      if (!cond) {
+        printf("Bye!\n");
+        break;
+      } else {
+        printf("Keep go!\n");
+      }
 
       free(fileinfos);
-    }
+
+    }  // while
 
     close(clnt_sock);
-  }
+
+  }  // while
 
   close(serv_sock);
   return 0;
