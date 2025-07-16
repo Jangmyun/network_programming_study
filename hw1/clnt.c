@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
   printf("\n<Read File Informations>\n");
   for (int i = 0; i < filecount; i++) {
     read(sock, &fileinfo, sizeof(FileInfo));
-    printf("%d: %s | %l\n", i + 1, fileinfo.filename, fileinfo.size);
+    printf("%d: %s | %ld\n", i + 1, fileinfo.filename, fileinfo.size);
   }
 
   close(sock);

@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < filecount; i++) {
       write(clnt_sock, &fileinfos[i], sizeof(FileInfo));
 #ifdef DEBUG
-      printf("SEND FILEINFO: filename=%s, size=%l\n", fileinfos[i].filename,
+      printf("SEND FILEINFO: filename=%s, size=%ld\n", fileinfos[i].filename,
              fileinfos[i].size);
 #endif
     }
