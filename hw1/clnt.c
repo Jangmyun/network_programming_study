@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  filecount = read(sock, buf, sizeof(int));
+  read(sock, &filecount, sizeof(int));
   printf("%d", filecount);
 
   close(sock);
