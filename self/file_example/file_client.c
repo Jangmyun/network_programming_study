@@ -32,6 +32,9 @@ int main(int argc, char *argv[]) {
     error_handling("connect() error");
   }
 
+  while((read_cnt = read(sd, buf, BUF_SIZE)) != 0)
+    fwrite((void*)buf, 1, read_cnt, fp);
+
   puts("Recived file data");
   write(sd, "Thank you", 10);
   
