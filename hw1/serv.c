@@ -96,6 +96,25 @@ int main(int argc, char *argv[]) {
       printf("file_selected = %d", file_selected);
 #endif
 
+      // 파일 송신
+      writen(clnt_sock, &fileinfos[file_selected], sizeof(FileInfo));
+
+      FILE *fp = fopen(fileinfos[file_selected].filename, "rb");
+      if (fp == NULL) {
+        perror("fopen() failed");
+        free(fileinfos);
+        break;
+      }
+
+      while (1) {
+        read_count = fread((void *)buf, 1, BUF_SIZE, fp);
+        if (read_count < BUF_SIZE) {
+          write(clnt_sock, buf, read_count);
+          break;
+        }
+        write(clnt_sock, buf, BUF_SIZE);
+      }
+
       // 계속 반복할지 수신
       int cond = 0;
       readn(clnt_sock, &cond, sizeof(int));
