@@ -56,7 +56,6 @@ int main(int argc, char *argv[]) {
     printf("filecount = %d\n", filecount);
 #endif
 
-    long file_size = 0;
     FileInfo fileinfo;
     printf("\n<Read File Informations>\n");
     for (int i = 0; i < filecount; i++) {
