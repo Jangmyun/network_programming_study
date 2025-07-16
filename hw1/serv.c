@@ -78,10 +78,10 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     printf("filecount = %d\n", filecount);
 #endif
-    write(clnt_sock, &filecount, sizeof(int));
+    writen(clnt_sock, &filecount, sizeof(int));
 
     for (int i = 0; i < filecount; i++) {
-      write(clnt_sock, &fileinfos[i], sizeof(FileInfo));
+      writen(clnt_sock, &fileinfos[i], sizeof(FileInfo));
 #ifdef DEBUG
       printf("SEND FILEINFO: filename=%s, size=%ld\n", fileinfos[i].filename,
              fileinfos[i].size);
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     }
 
     int file_selected = 0;
-    read(clnt_sock, &file_selected, sizeof(int));
+    readn(clnt_sock, &file_selected, sizeof(int));
 #ifdef DEBUG
     printf("file_selected = %d", file_selected);
 #endif

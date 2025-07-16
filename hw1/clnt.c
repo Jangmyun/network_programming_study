@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
     fputs("Input invalid.\n", stdout);
   }
   file_selected--;
-  write(sock, &file_selected, sizeof(int));
+  writen(sock, &file_selected, sizeof(int));
 
   close(sock);
   return 0;
