@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #define BUF_SIZE 1024
 
@@ -33,6 +34,13 @@ int main(int argc, char *argv[]) {
 #endif
 
   serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+  int optval = 1;
+  if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
+                 sizeof(optval))) {
+    perror("setsockopt() error");
+    exit(1);
+  }
 
   memset(&serv_addr, 0, sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
