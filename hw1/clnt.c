@@ -85,6 +85,20 @@ int main(int argc, char *argv[]) {
 #endif
     writen(sock, &file_selected, sizeof(int));
 
+    // File 정보 받은 후 파일 받기
+    readn(sock, &fileinfo, sizeof(FileInfo));
+
+    FILE *fp = fopen(fileinfo.filename, "wb");
+    if (fp == NULL) {
+      perror("fopen() failed");
+      break;
+    }
+
+    long file_size = fileinfo.size;
+    while ((read_cnt = read(sock, buf, BUF_SIZE)) != 0) {
+      fwrite((void *)buf, 1, read_cnt, fp);
+    }
+
     // 계속 반복할지 입력받기
     int cond = 1;
     fputs("Keep going? (y / n) > ", stdout);
