@@ -93,9 +93,18 @@ int main(int argc, char *argv[]) {
       break;
     }
 
-    long file_size = fileinfo.size;
-    while ((read_cnt = read(sock, buf, BUF_SIZE)) != 0) {
+    long left_bytes = fileinfo.size;
+    while (left_bytes > 0) {
+      if (left_bytes < BUF_SIZE) {
+        read_cnt = readn(sock, buf, left_bytes);
+        fwrite((void *)buf, 1, left_bytes, fp);
+        left_bytes -= read_cnt;
+        break;
+      }
+
+      read_cnt = readn(sock, buf, BUF_SIZE);
       fwrite((void *)buf, 1, read_cnt, fp);
+      left_bytes -= read_cnt;
     }
 
     // 계속 반복할지 입력받기
