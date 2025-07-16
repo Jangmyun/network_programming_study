@@ -61,7 +61,8 @@ int main(int argc, char *argv[]) {
     else
       printf("Connected client\n");
 
-    write(clnt_sock, (filecount = count_files(".")), sizeof(int));
+    filecount = count_files(".");
+    write(clnt_sock, filecount, sizeof(int));
 
     close(clnt_sock);
   }
