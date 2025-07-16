@@ -8,6 +8,12 @@
 #include <unistd.h>
 
 #define BUF_SIZE 1024
+#define MAX_FILENAME_SIZE 259
+
+typedef struct {
+  char filename[MAX_FILENAME_SIZE + 1];
+  off_t size;
+} FileInfo;
 
 void error_handling(char *message);
 
@@ -37,7 +43,21 @@ int main(int argc, char *argv[]) {
   }
 
   read(sock, &filecount, sizeof(int));
-  printf("filecount=%d\n", filecount);
+  if (filecount == -1) {
+    printf("filecount invalid\n");
+    close(sock);
+    exit(1);
+  }
+#ifdef DEBUG
+  printf("filecount = %d\n", filecount);
+#endif
+
+  FileInfo fileinfo;
+  printf("\n<Read File Informations>\n");
+  for (int i = 0; i < filecount; i++) {
+    read(sock, &fileinfo, sizeof(FileInfo));
+    printf("%d: %s | %l\n", i + 1, fileinfo.filename, fileinfo.size);
+  }
 
   close(sock);
   return 0;
