@@ -100,7 +100,6 @@ int main(int argc, char *argv[]) {
       int cond = 0;
       readn(clnt_sock, &cond, sizeof(int));
       if (!cond) {
-        printf("Bye!\n");
         break;
       } else {
         printf("Keep go!\n");
@@ -110,6 +109,7 @@ int main(int argc, char *argv[]) {
 
     }  // while
 
+    printf("Bye!\n");
     close(clnt_sock);
 
   }  // while
