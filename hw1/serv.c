@@ -9,9 +9,16 @@
 #include <unistd.h>
 
 #define BUF_SIZE 1024
+#define MAX_FILENAME_SIZE 259
+
+typedef struct {
+  char filename[MAX_FILENAME_SIZE + 1];
+  off_t size;
+} FileInfo;
 
 void error_handling(char *message);
 int count_files(char *path);
+FileInfo *read_files(char *path, int filecount);
 
 int main(int argc, char *argv[]) {
   int serv_sock = 0, clnt_sock = 0;
@@ -51,6 +58,7 @@ int main(int argc, char *argv[]) {
   if (listen(serv_sock, 5) == -1) {
     perror("listen() error");
   }
+  printf("Server On\n");
 
   clnt_addr_size = sizeof(clnt_addr);
 
@@ -97,4 +105,41 @@ int count_files(char *path) {
   closedir(dir);
 
   return count;
+}
+
+// count된 파일 개수만큼 stat 구조체 배열 동적할당하여 포인터 리턴
+FileInfo *read_files(char *path, int filecount) {
+  int count = 0;
+  if (path == NULL || filecount < 1) exit(1);
+
+  FileInfo *fileinfos = (FileInfo *)malloc(sizeof(FileInfo) * filecount);
+  if (fileinfos == NULL) {
+    perror("malloc() failed");
+    exit(1);
+  }
+
+  DIR *dir = NULL;
+  struct dirent *entry;
+  struct stat curr_stat;
+
+  dir = opendir(path);
+  if (dir == NULL) {
+    perror("opendir() failed");
+    exit(1);
+  }
+
+  while ((entry = readdir(dir))) {
+    if (count == filecount) break;
+    if (entry->d_type == DT_REG) {
+      stat(entry->d_name, &curr_stat);
+      strncpy(fileinfos[count].filename, entry->d_name, MAX_FILENAME_SIZE);
+      fileinfos[count].filename[MAX_FILENAME_SIZE] = 0;
+      fileinfos[count].size = curr_stat.st_size;
+
+      count++;
+    }
+  }
+
+  closedir(dir);
+  return fileinfos;
 }
