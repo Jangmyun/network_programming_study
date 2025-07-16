@@ -9,7 +9,7 @@
 #define BUF_SIZE 1024
 
 void error_handling(char *message);
-int count_files(char *path, int *filename_size);
+int count_files(char *path);
 
 int main(int argc, char *argv[]) {
   int server_socket = 0;
@@ -44,17 +44,12 @@ void error_handling(char *message) {
   exit(1);
 }
 
-/*
-path 디렉토리의 파일 개수를 카운트하고, filename_size
-
-return:
-*/
-int count_files(char *path, int *filename_size) {
+// path 디렉토리의 파일 개수를 카운트하고, filename_size set
+int count_files(char *path) {
   DIR *dir = NULL;
   struct dirent *entry;
 
   if (path == NULL) return -1;
-  if (*filename_size != 0) return -1;
   if ((dir = opendir(path)) == NULL) return -1;
 
   int count = 0;
@@ -63,9 +58,10 @@ int count_files(char *path, int *filename_size) {
     // file이면 count++
     if (entry->d_type == DT_REG) {
       count++;
-      *filename_size += entry->d_namlen;
     }
   }
+
+  closedir(dir);
 
   return count;
 }
