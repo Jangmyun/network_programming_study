@@ -23,7 +23,7 @@ FileInfo *read_files(char *path, int filecount);
 int main(int argc, char *argv[]) {
   int serv_sock = 0, clnt_sock = 0;
   char buf[BUF_SIZE];
-  int str_len = 0;
+  int read_count = 0;
   int filename_size = 0;
   int currBuffSize = 0;
 
@@ -85,6 +85,12 @@ int main(int argc, char *argv[]) {
              fileinfos[i].size);
 #endif
     }
+
+    int file_selected = 0;
+    read(clnt_sock, &file_selected, sizeof(int));
+#ifdef DEBUG
+    printf("file_selected = %d", file_selected);
+#endif
 
     close(clnt_sock);
     free(fileinfos);
