@@ -89,6 +89,10 @@ int main(int argc, char *argv[]) {
     }
 
     int file_selected = 0;
+#ifdef DEBUG
+    printf("read file_selected\n");
+#endif
+    // read file_selected from client;
     readn(clnt_sock, &file_selected, sizeof(int));
 #ifdef DEBUG
     printf("file_selected = %d", file_selected);
