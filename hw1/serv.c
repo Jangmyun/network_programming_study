@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  int filecount = count_files(".", &filename_size);
+  int filecount = count_files(".");
 
 #ifdef DEBUG
   printf("filecount=%d, filename_size=%d\n", filecount, filename_size);
