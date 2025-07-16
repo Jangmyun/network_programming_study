@@ -77,7 +77,10 @@ int main(int argc, char *argv[]) {
     fputs("Input invalid.\n", stdout);
   }
   file_selected--;
-  writen(sock, &file_selected, sizeof(int));
+  read_cnt = writen(sock, &file_selected, sizeof(int));
+#ifdef DEBUG
+  printf("WRITTEN: %d", read_cnt);
+#endif
 
   close(sock);
   return 0;
