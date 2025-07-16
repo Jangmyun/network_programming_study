@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
       int file_selected = 0;
       readn(clnt_sock, &file_selected, sizeof(int));
 #ifdef DEBUG
-      printf("file_selected = %d", file_selected);
+      printf("file_selected = %d\n", file_selected);
 #endif
 
       // 파일 송신
