@@ -6,7 +6,7 @@ server : serv.c
 	gcc serv.c -o server.out
 
 client_debug : clnt.c
-	gcc clnt.c -o client_debug.out
+	gcc clnt.c -o client_debug.out -D DEBUG
 server_debug : serv.c
-	gcc serv.c -o server_debug.out
+	gcc serv.c -o server_debug.out -D DEBUG
 
