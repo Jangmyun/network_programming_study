@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 
 #define BUF_SIZE 1024
-// #define DEBUG
 
 void error_handling(char *message);
 
@@ -16,6 +15,8 @@ int main(int argc, char *argv[]) {
   char buf[BUF_SIZE];
   int read_cnt = 0;
   struct sockaddr_in serv_addr;
+
+  int filecount = 0;
 
   if (argc != 3) {
     printf("Usage: %s <port>\n", argv[0]);
@@ -33,6 +34,9 @@ int main(int argc, char *argv[]) {
     perror("connect() error");
     exit(1);
   }
+
+  filecount = read(sock, buf, sizeof(int));
+  printf("%d", filecount);
 
   close(sock);
   return 0;
