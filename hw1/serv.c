@@ -29,10 +29,6 @@ int main(int argc, char *argv[]) {
 
   int filecount = 0;
 
-#ifdef DEBUG
-  printf("filecount=%d, filename_size=%d\n", filecount, filename_size);
-#endif
-
   serv_sock = socket(PF_INET, SOCK_STREAM, 0);
 
   int optval = 1;
@@ -56,7 +52,21 @@ int main(int argc, char *argv[]) {
   }
 
   clnt_addr_size = sizeof(clnt_addr);
-  clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+
+  while (1) {
+    clnt_sock =
+        accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+    if (clnt_sock == -1)
+      continue;
+    else
+      printf("Connected client\n");
+
+    write(clnt_sock, (filecount = count_files(".")), sizeof(int));
+
+    close(clnt_sock);
+  }
+
+  return 0;
 }
 
 void error_handling(char *message) {
