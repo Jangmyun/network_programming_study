@@ -7,6 +7,7 @@ int main(int argc, char *argv[]) {
   }
 
   int sock;
+  char buf[PKT_SIZE] = "";
   int read_cnt;
   socklen_t addr_size;
 
@@ -30,10 +31,26 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  pkt_t packet;
-  pkt_t_h packet_header;
-  init_packet(&packet);
-  init_packet_header(&packet_header);
+  pkt_t pkt;
+  pkt_t received_pkt;
+  init_packet(&pkt);
+
+  // connection req
+  pkt.header.pkt_type = TYPE_CONNECTION_REQ;
+  set_packet(&pkt, buf);
+
+  signal(SIGALRM, timeout);
+  while (1) {
+    alarm(2);
+    write(sock, &pkt, PKT_SIZE);
+    read(sock, &received_pkt, PKT_SIZE);
+
+    if (received_pkt.header.pkt_type == TYPE_CONNECTION_REQ &&
+        received_pkt.header.ack) {
+      break;
+    }
+  }
+  alarm(0);
 
   return 0;
 }
