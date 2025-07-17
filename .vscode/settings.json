@@ -1,5 +1,11 @@
 {
   "files.watcherExclude": {
     "**/target": true
+  },
+  "files.associations": {
+    "*.dbclient-js": "javascript",
+    "stdio.h": "c",
+    "dirent.h": "c",
+    "stop_and_wait.h": "c"
   }
 }
