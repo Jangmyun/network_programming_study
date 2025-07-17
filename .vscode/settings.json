@@ -6,6 +6,7 @@
     "*.dbclient-js": "javascript",
     "stdio.h": "c",
     "dirent.h": "c",
-    "stop_and_wait.h": "c"
+    "stop_and_wait.h": "c",
+    "string.h": "c"
   }
 }
