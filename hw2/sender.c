@@ -46,9 +46,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
-void timeout(int sig) {
-  if (sig != SIGALRM) return;
-
-  ualarm(60, 0);  // no interval
-}
