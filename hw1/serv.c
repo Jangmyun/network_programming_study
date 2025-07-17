@@ -106,6 +106,7 @@ int main(int argc, char *argv[]) {
         break;
       }
 
+      printf("Sending [%s]...   ", fileinfos[file_selected].filename);
       while (1) {
         read_count = fread((void *)buf, 1, BUF_SIZE, fp);
         if (read_count < BUF_SIZE) {
@@ -114,10 +115,15 @@ int main(int argc, char *argv[]) {
         }
         write(clnt_sock, buf, BUF_SIZE);
       }
+      printf("Done!");
 
       // 계속 반복할지 수신
       int cond = 0;
       readn(clnt_sock, &cond, sizeof(int));
+#ifdef DEBUG
+      printf("Keep go : %d\n", cond);
+#endif
+
       if (!cond) {
         break;
       } else {

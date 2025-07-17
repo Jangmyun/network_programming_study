@@ -110,7 +110,10 @@ int main(int argc, char *argv[]) {
     // 계속 반복할지 입력받기
     int cond = 1;
     fputs("Keep going? (y / n) > ", stdout);
-    fgets(buf, BUF_SIZE, stdin);
+    scanf("%s", buf);
+#ifdef DEBUG
+    printf("%s", buf);
+#endif
     if (strcmp(buf, "y")) {
       printf("no iteration\n");
       cond = 0;
