@@ -1,5 +1,7 @@
 #include "stop_and_wait.h"
 
+int timeout_flag = 0;
+
 int init_packet(pkt_t *p) {
   memset(p, 0, sizeof(*p));
   return 0;
@@ -17,8 +19,16 @@ void set_packet_header(pkt_t_h *ph, unsigned short pkt_type, unsigned int seq,
   ph->ack = ack;
   ph->data_size = data_size;
 }
-void set_packet(pkt_t *p, pkt_t_h *ph, char *data) {
-  memcpy(p, ph, sizeof(*ph));
-  // ph만큼 pointer 이동 후 data에만 memcpy
-  memcpy(p + sizeof(*ph), data, ph->data_size);
+void set_packet(pkt_t *p, char *data) {
+  // header 사이즈만큼 pointer 이동 후 data에만 memcpy
+  memcpy(p + sizeof(pkt_t_h), data, PKT_DATA_SIZE);
+}
+
+void timeout(int sig) {
+  if (sig == SIGALRM) {
+#ifdef DEBUG
+    printf("timeout\n");
+#endif
+    timeout_flag = 1;
+  }
 }

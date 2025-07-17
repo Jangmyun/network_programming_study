@@ -18,6 +18,9 @@
 #define TYPE_DATA 0
 #define TYPE_ACK 1
 #define TYPE_CONNECTION_REQ 2
+#define TYPE_CONNECTION_CLOSE 3
+
+extern int timeout_flag;
 
 typedef struct {
   unsigned short pkt_type;  // data, ack, connection_req
@@ -33,11 +36,16 @@ typedef struct {
   char data[PKT_DATA_SIZE];
 } pkt_t;
 
+// init functions
 int init_packet(pkt_t *p);
 int init_packet_header(pkt_t_h *ph);
 
+// packet setter functions
 void set_packet_header(pkt_t_h *ph, unsigned short pkt_type, unsigned int seq,
                        unsigned short ack, unsigned int data_size);
-void set_packet(pkt_t *p, pkt_t_h *ph);
+void set_packet(pkt_t *p, char *data);
+
+// alarm handler
+void timeout(int sig);
 
 #endif  // STOP_AND_WAIT_H
