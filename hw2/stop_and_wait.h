@@ -36,8 +36,8 @@ typedef struct {
 int init_packet(pkt_t *p);
 int init_packet_header(pkt_t_h *ph);
 
-void set_packet_header(pkt_t_h *ph, unsigned int seq, unsigned short ack,
-                       unsigned short connect_req, unsigned int data_size);
+void set_packet_header(pkt_t_h *ph, unsigned short pkt_type, unsigned int seq,
+                       unsigned short ack, unsigned int data_size);
 void set_packet(pkt_t *p, pkt_t_h *ph);
 
 #endif  // STOP_AND_WAIT_H
