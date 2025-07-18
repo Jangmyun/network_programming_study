@@ -1,6 +1,7 @@
 #include "stop_and_wait.h"
 
 int timeout_flag = 0;
+unsigned int seq = 0;
 
 int init_packet(pkt_t *p) {
   memset(p, 0, sizeof(*p));
@@ -32,3 +33,4 @@ void timeout(int sig) {
     timeout_flag = 1;
   }
 }
+
