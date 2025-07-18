@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in sender_addr, receiver_addr;
   struct sockaddr_in from_addr;
 
-  socklen_t addr_len;
+  socklen_t addr_len = sizeof(from_addr);
 
   memset(&sender_addr, 0, sizeof(sender_addr));
   sender_addr.sin_family = AF_INET;
@@ -56,6 +56,9 @@ int main(int argc, char *argv[]) {
   printf("Connection Waiting...\n");
   // connection res
   while (1) {
+#ifdef DEBUG
+    printf("sender is ready to recv req");
+#endif
     rw_len = recvfrom(sender_sock, &recv_pkt, PKT_SIZE, 0,
                       (struct sockaddr *)&from_addr, &addr_len);
     if (rw_len == -1) {
