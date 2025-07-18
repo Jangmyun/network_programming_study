@@ -22,7 +22,7 @@ void set_packet_header(pkt_t_h *ph, unsigned short pkt_type, unsigned int seq,
 }
 void set_packet(pkt_t *p, char *data) {
   // header 사이즈만큼 pointer 이동 후 data에만 memcpy
-  memcpy(p + sizeof(pkt_t_h), data, PKT_DATA_SIZE);
+  memcpy(p->data, data, PKT_DATA_SIZE);
 }
 
 void timeout(int sig) {
