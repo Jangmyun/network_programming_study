@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
   send_pkt.header.pkt_type = TYPE_CONNECTION_REQ;
   set_packet(&send_pkt, buf);
 
+  printf("Connection Waiting...\n");
   // connection res
   while (1) {
     rw_len = recvfrom(sender_sock, &recv_pkt, PKT_SIZE, 0,
