@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // set alarm & init timeout_flag
-    ualarm(500, 0);
+    ualarm(500000, 0);
     timeout_flag = 0;
 
     rw_len = recvfrom(sock, &recv_pkt, PKT_SIZE, 0,
@@ -65,8 +65,8 @@ int main(int argc, char *argv[]) {
     // CONNECTION_REQ에 대한 ACK를 수신하면
     if (recv_pkt.header.pkt_type == TYPE_CONNECTION_REQ &&
         recv_pkt.header.ack) {
-      timeout_flag = 0;
       ualarm(0, 0);
+      timeout_flag = 0;
       break;
     }
 
@@ -81,6 +81,7 @@ int main(int argc, char *argv[]) {
     close(sock);
     return 0;
   }
+
   printf("Connection success\n");
 
   // file 받기
