@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
   int sock;
   char buf[PKT_SIZE] = "";
   int rw_len;
-  socklen_t addr_size;
+  socklen_t addr_size = sizeof(struct sockaddr_in);
 
   struct sockaddr_in sender_addr, from_addr;
 
