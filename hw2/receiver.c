@@ -8,10 +8,10 @@ int main(int argc, char *argv[]) {
 
   int sock;
   char buf[PKT_SIZE] = "";
-  int read_cnt;
+  int rw_len;
   socklen_t addr_size;
 
-  struct sockaddr_in sender_addr;
+  struct sockaddr_in sender_addr, from_addr;
 
   sock = socket(PF_INET, SOCK_DGRAM, 0);
   if (sock == -1) {
@@ -24,33 +24,69 @@ int main(int argc, char *argv[]) {
   sender_addr.sin_addr.s_addr = inet_addr(argv[1]);
   sender_addr.sin_port = htons(atoi(argv[2]));
 
-  // connected sock
-  if (connect(sock, (struct sockaddr *)&sender_addr, sizeof(sender_addr)) ==
-      -1) {
-    perror("connect() failed");
-    exit(1);
-  }
+  signal(SIGALRM, timeout);
 
-  pkt_t pkt;
+  pkt_t send_pkt, recv_pkt;
   pkt_t received_pkt;
-  init_packet(&pkt);
+  init_packet(&send_pkt);
+
+  send_pkt.header.pkt_type = TYPE_CONNECTION_REQ;
+  set_packet(&send_pkt, buf);
+
+  int req_time = 0;
 
   // connection req
-  pkt.header.pkt_type = TYPE_CONNECTION_REQ;
-  set_packet(&pkt, buf);
+  while (req_time < MAX_REQ) {
+    sendto(sock, &send_pkt, PKT_SIZE, 0, (struct sockaddr *)&sender_addr,
+           sizeof(sender_addr));
 
-  signal(SIGALRM, timeout);
-  while (1) {
-    alarm(2);
-    write(sock, &pkt, PKT_SIZE);
-    read(sock, &received_pkt, PKT_SIZE);
+#ifdef DEBUG
+    printf("Request sent\n");
+#endif
 
-    if (received_pkt.header.pkt_type == TYPE_CONNECTION_REQ &&
-        received_pkt.header.ack) {
+    // set alarm & init timeout_flag
+    ualarm(500, 0);
+    timeout_flag = 0;
+
+    rw_len = recvfrom(sock, &recv_pkt, PKT_SIZE, 0,
+                      (struct sockaddr *)&from_addr, &addr_size);
+    if (rw_len == -1) {
+      perror("read() failed");
+      req_time++;
+      continue;
+    }
+
+    // 다른 주소에서 온 패킷 처리
+    if (sender_addr.sin_addr.s_addr != from_addr.sin_addr.s_addr) {
+      req_time++;
+      continue;
+    }
+
+    // CONNECTION_REQ에 대한 ACK를 수신하면
+    if (recv_pkt.header.pkt_type == TYPE_CONNECTION_REQ &&
+        recv_pkt.header.ack) {
+      timeout_flag = 0;
+      ualarm(0, 0);
       break;
     }
-  }
-  alarm(0);
 
+#ifdef DEBUG
+    printf("Req failed\n");
+#endif
+  }  // while
+
+  // connection failed
+  if (timeout_flag == 1) {
+    printf("Connection failed\n");
+    close(sock);
+    return 0;
+  }
+  printf("Connection success\n");
+
+  // file 받기
+
+  printf("Receiver Terminated\n");
+
+  close(sock);
   return 0;
 }
