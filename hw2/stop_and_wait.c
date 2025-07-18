@@ -77,3 +77,47 @@ ssize_t reliable_sendto(int sock, void *buff, size_t nbytes, int flags,
   return -1;
 }
 
+ssize_t reliable_recvfrom(int sock, void *buff, size_t nbytes, int flags,
+                          struct sockaddr *from,
+                          struct sockaddr *connected_addr, socklen_t *addrlen,
+                          unsigned int curr_seq) {
+  ssize_t read_len = 0;
+  pkt_t recv_pkt;
+
+  while (1) {
+    read_len = recvfrom(sock, &recv_pkt, PKT_SIZE, flags, from, addrlen);
+    if (read_len == -1) {
+      perror("recvfrom() failed");
+      return -1;
+    }
+
+    // connected 된 address와 recvfrom으로 받은 address가 다르면 -1 리턴
+    if (((struct sockaddr_in *)connected_addr)->sin_addr.s_addr !=
+        ((struct sockaddr_in *)from)->sin_addr.s_addr) {
+      return -1;
+    }
+
+    pkt_t ack_pkt;
+    init_packet(&ack_pkt);
+    set_packet_header(&ack_pkt.header, TYPE_ACK, recv_pkt.header.seq, 1, 0);
+
+    if (recv_pkt.header.pkt_type == TYPE_DATA) {
+#ifdef DEBUG
+      printf("header_seq=%d | curr_seq=%d\n", recv_pkt.header.seq, curr_seq);
+#endif
+
+      // seq 같으면 valid data 이므로 memcpy
+      // seq 다르면 이미 받아온 data이므로 ack만 다시 보내기
+      if (recv_pkt.header.seq == curr_seq) {
+        memcpy(buff, &recv_pkt, PKT_SIZE);
+        sendto(sock, &ack_pkt, PKT_SIZE, 0, from, *addrlen);
+        return PKT_SIZE;
+      } else {
+        sendto(sock, &ack_pkt, PKT_SIZE, 0, from, *addrlen);
+        continue;
+      }
+    }
+  }
+
+  return -1;
+}
