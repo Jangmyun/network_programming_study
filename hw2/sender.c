@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 
   int sender_sock = 0;
   char buf[PKT_SIZE];
-  int read_cnt = 0;
+  int rw_len = 0;
   socklen_t clnt_addr_size;
 
   pkt_t_h packet_header;
@@ -31,7 +31,9 @@ int main(int argc, char *argv[]) {
   }
 
   struct sockaddr_in sender_addr, receiver_addr;
-  struct sockaddr_in curr_receiver_addr;
+  struct sockaddr_in from_addr;
+
+  socklen_t addr_len;
 
   memset(&sender_addr, 0, sizeof(sender_addr));
   sender_addr.sin_family = AF_INET;
@@ -44,5 +46,37 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
+  signal(SIGALRM, timeout);
+  pkt_t send_pkt, recv_pkt;
+  init_packet(&send_pkt);
+
+  send_pkt.header.pkt_type = TYPE_CONNECTION_REQ;
+  set_packet(&send_pkt, buf);
+
+  // connection res
+  while (1) {
+    rw_len = recvfrom(sender_sock, &recv_pkt, PKT_SIZE, 0,
+                      (struct sockaddr *)&from_addr, &addr_len);
+    if (rw_len == -1) {
+      perror("recvfrom() failed");
+      continue;
+    }
+
+    if (recv_pkt.header.pkt_type == TYPE_CONNECTION_REQ) {
+#ifdef DEBUG
+      printf("Connection request received\n");
+#endif
+      set_packet_header(&send_pkt.header, TYPE_CONNECTION_REQ, 0, 1, 0);
+
+      sendto(sender_sock, &send_pkt, PKT_SIZE, 0,
+             (struct sockaddr *)&receiver_addr, sizeof(receiver_addr));
+      break;
+    }
+  }
+  printf("Connection success\n");
+
+  // file 보내기
+
+  close(sender_sock);
   return 0;
 }
