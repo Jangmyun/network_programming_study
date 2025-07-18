@@ -56,8 +56,7 @@ ssize_t reliable_sendto(int sock, void *buff, size_t nbytes, int flags,
                         unsigned int curr_seq);
 
 ssize_t reliable_recvfrom(int sock, void *buff, size_t nbytes, int flags,
-                          struct sockaddr *from,
-                          struct sockaddr *connected_addr, socklen_t *addrlen,
+                          struct sockaddr *from, socklen_t *addrlen,
                           unsigned int curr_seq);
 
 #endif  // STOP_AND_WAIT_H

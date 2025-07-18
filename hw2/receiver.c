@@ -85,6 +85,13 @@ int main(int argc, char *argv[]) {
   printf("Connection success\n");
 
   // file 받기
+  // filename 받기
+  seq = 0;
+  rw_len = reliable_recvfrom(sock, &recv_pkt, PKT_SIZE, 0,
+                             (struct sockaddr *)&from_addr, &addr_size, seq);
+  int filecount = 0;
+  memcpy(&filecount, recv_pkt.data, recv_pkt.header.data_size);
+  printf("filecount = %d\n", filecount);
 
   printf("Receiver Terminated\n");
 

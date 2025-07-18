@@ -25,6 +25,11 @@ void set_packet(pkt_t *p, char *data) {
   memcpy(p->data, data, PKT_DATA_SIZE);
 }
 
+void set_data(pkt_t *p, char *data, unsigned int data_size) {
+  memcpy(p->data, data, PKT_DATA_SIZE);
+  p->header.data_size = data_size;
+}
+
 void timeout(int sig) {
   if (sig == SIGALRM) {
 #ifdef DEBUG
@@ -78,8 +83,7 @@ ssize_t reliable_sendto(int sock, void *buff, size_t nbytes, int flags,
 }
 
 ssize_t reliable_recvfrom(int sock, void *buff, size_t nbytes, int flags,
-                          struct sockaddr *from,
-                          struct sockaddr *connected_addr, socklen_t *addrlen,
+                          struct sockaddr *from, socklen_t *addrlen,
                           unsigned int curr_seq) {
   ssize_t read_len = 0;
   pkt_t recv_pkt;
@@ -88,12 +92,6 @@ ssize_t reliable_recvfrom(int sock, void *buff, size_t nbytes, int flags,
     read_len = recvfrom(sock, &recv_pkt, PKT_SIZE, flags, from, addrlen);
     if (read_len == -1) {
       perror("recvfrom() failed");
-      return -1;
-    }
-
-    // connected 된 address와 recvfrom으로 받은 address가 다르면 -1 리턴
-    if (((struct sockaddr_in *)connected_addr)->sin_addr.s_addr !=
-        ((struct sockaddr_in *)from)->sin_addr.s_addr) {
       return -1;
     }
 

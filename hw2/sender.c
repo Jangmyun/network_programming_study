@@ -1,3 +1,4 @@
+#include "file_info.h"
 #include "stop_and_wait.h"
 
 void timeout(int sig);
@@ -80,7 +81,21 @@ int main(int argc, char *argv[]) {
   printf("Connection success\n");
 
   // file 보내기
+  // ready packet
+  init_packet(&send_pkt);
+  set_packet_header(&send_pkt.header, TYPE_DATA, 0, 0, 0);
 
+  FileInfo *fileinfos = NULL;
+  int filecount = 0;
+  fileinfos = read_files(".", (filecount = count_files(".")));
+
+  // file number
+  seq = 0;
+  set_data(&send_pkt, &filecount, sizeof(int));
+  rw_len = reliable_sendto(sender_sock, &send_pkt, PKT_SIZE, 0,
+                           (struct sockaddr *)&from_addr, &addr_len, seq);
+
+  free(fileinfos);
   close(sender_sock);
   return 0;
 }
