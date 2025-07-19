@@ -85,9 +85,14 @@ void connectWithClient(ConnectionInfo *conn) {
 #ifdef DEBUG
       puts("Connection request received");
 #endif
-      sendto(conn->sock, &sendPacket, PKT_SIZE, 0,
-             (struct sockaddr *)&from_addr, from_addr_len);
 
+      rw_len = sendto(conn->sock, &sendPacket, PKT_SIZE, 0,
+                      (struct sockaddr *)&from_addr, from_addr_len);
+      if (rw_len == -1) {
+        perror("sendto() failed");
+        connectionTry++;
+        continue;
+      }
       conn->recv_addr = from_addr;
       conn->recv_addr_len = from_addr_len;
 
@@ -99,6 +104,7 @@ void connectWithClient(ConnectionInfo *conn) {
 
   if (connectionTry >= MAX_REQ) {
     fprintf(stderr, "Connection Failed\n");
+    close(conn->sock);
     exit(1);
   }
 
