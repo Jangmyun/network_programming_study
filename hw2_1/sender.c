@@ -30,6 +30,8 @@ int main(int argc, char *argv[]) {
     send_packet.header.packetType = PKT_CONNECTION_REQ;
   }
 
+  connectWithClient(&conn);
+
   return 0;
 }
 
@@ -93,6 +95,11 @@ void connectWithClient(ConnectionInfo *conn) {
     }
 
     connectionTry++;
+  }
+
+  if (connectionTry >= MAX_REQ) {
+    fprintf(stderr, "Connection Failed\n");
+    exit(1);
   }
 
   puts("Connection Established");
