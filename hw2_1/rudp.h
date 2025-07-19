@@ -16,8 +16,8 @@
 
 // PACKET_TYPE
 #define PKT_DATA 0
-#define PKT_ACK 0
-#define PKT_CONNECTION_REQ 0
+#define PKT_ACK 1
+#define PKT_CONNECTION_REQ 2
 
 extern int timeoutFlag;
 
