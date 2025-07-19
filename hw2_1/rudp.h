@@ -55,6 +55,7 @@ void setPacket(Packet *packet, void *data);
 
 int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
              unsigned int curr_seq);
+int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq);
 
 void timeout(int sig);
 
