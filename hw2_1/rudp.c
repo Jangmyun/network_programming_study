@@ -43,8 +43,8 @@ int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
 
   int try = 0;
   while (try < MAX_REQ) {
-    rw_len = sendto(conn->sock, &sendPacket, PKT_SIZE, 0, &conn->recv_addr,
-                    conn->recv_addr_len);
+    rw_len = sendto(conn->sock, &sendPacket, PKT_SIZE, 0,
+                    (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
     if (rw_len == -1) {
       perror("sendto() failed");
       continue;
@@ -120,7 +120,7 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
         memcpy(data_buff, recvPacket.data, recvPacket.header.dataSize);
 
         sendto(conn->sock, &ackPacket, PKT_SIZE, 0,
-               (struct sockaddr *)&conn->recv_addr, &conn->recv_addr_len);
+               (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
 
         timeoutTime.tv_usec = 0;
         if (setsockopt(conn->sock, SOL_SOCKET, SO_RCVTIMEO, &timeoutTime,
@@ -132,7 +132,7 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
         return recvPacket.header.dataSize;
       } else {  // seq 다르면 ack 재전송]
         sendto(conn->sock, &ackPacket, PKT_SIZE, 0,
-               (struct sockaddr *)&conn->recv_addr, &conn->recv_addr_len);
+               (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
         continue;
       }
     }

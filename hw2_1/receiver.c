@@ -136,7 +136,7 @@ void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize) {
     recv_size += read_len;
     seq++;
 
-    printf("[%d] (%d/%d)\n", seq, recv_size);
+    printf("[%d] (%d/%d)\n", seq, recv_size, filesize);
   }
 
   fclose(fp);
