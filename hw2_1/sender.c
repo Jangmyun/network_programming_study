@@ -2,10 +2,11 @@
 
 int setConnectionInfo(ConnectionInfo *conn, char *portArg);
 void connectWithClient(ConnectionInfo *conn);
+void sendFile(ConnectionInfo *conn, char *filename);
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    printf("Usage: %s <port>\n", argv[0]);
+  if (argc != 3) {
+    printf("Usage: %s <port> <filename>\n", argv[0]);
     exit(1);
   }
 
@@ -27,6 +28,8 @@ int main(int argc, char *argv[]) {
   signal(SIGALRM, timeout);
 
   connectWithClient(&conn);
+
+  sendFile(&conn, argv[2]);
 
   return 0;
 }
@@ -106,4 +109,55 @@ void connectWithClient(ConnectionInfo *conn) {
 
   puts("Connection Established");
   return;
+}
+
+void sendFile(ConnectionInfo *conn, char *filename) {
+  int rw_len;
+  FILE *fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    perror("fopen() failed");
+    exit(1);
+  }
+
+  // filename 전송
+  rw_len = r_sendto(conn, filename, strlen(filename), 0);
+  if (rw_len == -1) {
+    fclose(fp);
+    return;
+  }
+
+  // filesize 전송
+  fseek(fp, 0, SEEK_END);
+  unsigned int filesize = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+  rw_len = r_sendto(conn, &filesize, sizeof(unsigned int), 0);
+  if (rw_len == -1) {
+    fclose(fp);
+    return;
+  }
+
+  // file 전송
+  unsigned int send_size = 0;
+  char buf[PKT_DATA_SIZE];
+  int seq = 0;
+
+  while (1) {
+    rw_len = fread((void *)buf, 1, PKT_DATA_SIZE, fp);
+    if (rw_len < PKT_DATA_SIZE) {
+      if (r_sendto(conn, buf, rw_len, seq) == -1) {
+        fclose(fp);
+        return;
+      }
+      seq++;
+      break;
+    }
+    if (r_sendto(conn, buf, PKT_DATA_SIZE, seq) == -1) {
+      fclose(fp);
+      return;
+    }
+    seq++;
+  }
+
+  fclose(fp);
+  puts("File sent successfully");
 }
