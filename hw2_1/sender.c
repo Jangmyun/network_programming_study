@@ -22,13 +22,9 @@ int main(int argc, char *argv[]) {
       -1) {
     perror("bind() failed");
     exit(1);
-
-    signal(SIGALRM, timeout);
-    Packet send_packet, recv_packet;
-    initPacket(&send_packet);
-
-    send_packet.header.packetType = PKT_CONNECTION_REQ;
   }
+
+  signal(SIGALRM, timeout);
 
   connectWithClient(&conn);
 
