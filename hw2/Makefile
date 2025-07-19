@@ -1,15 +1,15 @@
-all: server client
+all: sender receiver
 
-debug: server_debug client_debug
+debug: sender_debug receiver_debug
 
-server: server.c stop_and_wait.c
-	gcc -o server.out server.c stop_and_wait.c
+sender: sender.c stop_and_wait.c file_info.c
+	gcc -o sender.out sender.c stop_and_wait.c file_info.c
 
-server_debug: server.c stop_and_wait.c
-	gcc -o server_debug.out server.c stop_and_wait.c -D DEBUG
+sender_debug: sender.c stop_and_wait.c file_info.c
+	gcc -o sender_debug.out sender.c stop_and_wait.c file_info.c -D DEBUG
 
-client: client.c stop_and_wait.c
-	gcc -o client.out client.c stop_and_wait.c
+receiver: receiver.c stop_and_wait.c file_info.c
+	gcc -o receiver.out receiver.c stop_and_wait.c file_info.c
 
-client_debug: client.c stop_and_wait.c
-	gcc -o client_debug.out client.c stop_and_wait.c -D DEBUG
+receiver_debug: receiver.c stop_and_wait.c file_info.c
+	gcc -o receiver_debug.out receiver.c stop_and_wait.c file_info.c -D DEBUG

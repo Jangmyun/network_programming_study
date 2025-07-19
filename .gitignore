@@ -1,3 +1,6 @@
 *.out
 self/endian_conv
 *.txt
+*.JPG
+*.png
+*.pdf
