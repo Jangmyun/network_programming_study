@@ -1,7 +1,7 @@
 #include "rudp.h"
 
 int setConnectionInfo(ConnectionInfo *conn, char *portArg);
-void waitConnection(ConnectionInfo *conn);
+void connectWithClient(ConnectionInfo *conn);
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -59,7 +59,7 @@ int setConnectionInfo(ConnectionInfo *conn, char *portArg) {
   return 1;
 }
 
-void waitConnection(ConnectionInfo *conn) {
+void connectWithClient(ConnectionInfo *conn) {
   Packet sendPacket, recvPacket;
   setPacketHeader(&sendPacket, PKT_CONNECTION_REQ, 0, 1, 0);
 
@@ -70,7 +70,7 @@ void waitConnection(ConnectionInfo *conn) {
   puts("Connection Waiting ...");
 
   int connectionTry = 0;
-  while (1) {
+  while (connectionTry < MAX_REQ) {
     rw_len = recvfrom(conn->sock, &recvPacket, PKT_SIZE, 0,
                       (struct sockaddr *)&from_addr, &from_addr_len);
     if (rw_len == -1) {
@@ -78,6 +78,23 @@ void waitConnection(ConnectionInfo *conn) {
       connectionTry++;
       continue;
     }
+
+    if (recvPacket.header.packetType == PKT_CONNECTION_REQ) {
+#ifdef DEBUG
+      puts("Connection request received");
+#endif
+      sendto(conn->sock, &sendPacket, PKT_SIZE, 0,
+             (struct sockaddr *)&from_addr, from_addr_len);
+
+      conn->recv_addr = from_addr;
+      conn->recv_addr_len = from_addr_len;
+
+      break;
+    }
+
+    connectionTry++;
   }
+
+  puts("Connection Established");
   return;
 }
