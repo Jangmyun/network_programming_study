@@ -118,14 +118,14 @@ void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize) {
     exit(1);
   }
 
-  printf("[%s] Downloading...", filename);
+  printf("[%s] Downloading...\n", filename);
 
   int read_len;
   int recv_size = 0;
   char buf[PKT_DATA_SIZE];
   unsigned int seq = 0;
 
-  while (1) {
+  while (recv_size < filesize) {
     read_len = r_recvfrom(conn, buf, seq);
     if (read_len == -1) {
       fclose(fp);

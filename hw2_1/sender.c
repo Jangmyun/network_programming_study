@@ -120,7 +120,7 @@ void sendFile(ConnectionInfo *conn, char *filename) {
   }
 
   // filename 전송
-  rw_len = r_sendto(conn, filename, strlen(filename), 0);
+  rw_len = r_sendto(conn, filename, strlen(filename) + 1, 0);
   if (rw_len == -1) {
     fclose(fp);
     return;
