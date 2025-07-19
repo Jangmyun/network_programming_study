@@ -72,9 +72,9 @@ int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
         perror("setsockopt() failed");
         return -1;
       }
-#ifdef DEBUG
+
       printf("[seq%d] ack received\n", recvPacket.header.seq);
-#endif
+
       return 0;
     }
 
@@ -133,9 +133,8 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
           return -1;
         }
 
-#ifdef DEBUG
         printf("[seq%d] ack sent\n", recvPacket.header.seq);
-#endif
+
         return recvPacket.header.dataSize;
       } else {  // seq 다르면 ack 재전송]
         setPacketHeader(&ackPacket, PKT_ACK, recvPacket.header.seq, 1, 0);
