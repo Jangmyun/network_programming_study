@@ -72,6 +72,9 @@ int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
         perror("setsockopt() failed");
         return -1;
       }
+#ifdef DEBUG
+      printf("[seq%d] ack received\n", recvPacket.header.seq);
+#endif
       return 0;
     }
 
@@ -102,8 +105,9 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
 
   int try = 0;
   while (try < MAX_REQ) {
-    rw_len = recvfrom(conn->sock, &recvPacket, PKT_SIZE, 0,
-                      (struct sockaddr *)&from_addr, &from_addr_len);
+    rw_len =
+        recvfrom(conn->sock, &recvPacket, PKT_SIZE, 0,
+                 (struct sockaddr *)&conn->recv_addr, &conn->recv_addr_len);
     if (rw_len == -1) {
       if (errno == EAGAIN) {
         try++;
@@ -120,7 +124,7 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
         memcpy(data_buff, recvPacket.data, recvPacket.header.dataSize);
 
         sendto(conn->sock, &ackPacket, PKT_SIZE, 0,
-               (struct sockaddr *)&from_addr, from_addr_len);
+               (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
 
         timeoutTime.tv_usec = 0;
         if (setsockopt(conn->sock, SOL_SOCKET, SO_RCVTIMEO, &timeoutTime,
@@ -129,10 +133,13 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
           return -1;
         }
 
+#ifdef DEBUG
+        printf("[seq%d] ack sent\n", recvPacket.header.seq);
+#endif
         return recvPacket.header.dataSize;
       } else {  // seq 다르면 ack 재전송]
         sendto(conn->sock, &ackPacket, PKT_SIZE, 0,
-               (struct sockaddr *)&from_addr, from_addr_len);
+               (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
         continue;
       }
     }
