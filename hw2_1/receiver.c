@@ -10,7 +10,10 @@ int main(int argc, char *argv[]) {
 
   setConnectionInfo(&conn, argv[1], argv[2]);
 
+  signal(SIGALRM, timeout);
   struct sockaddr_in from_addr;
+
+  connectWithServer(&conn);
 
   return 0;
 }
@@ -26,6 +29,9 @@ int setConnectionInfo(ConnectionInfo *conn, char *ipArg, char *portArg) {
   conn->addr.sin_family = AF_INET;
   conn->addr.sin_addr.s_addr = inet_addr(ipArg);
   conn->addr.sin_port = htons(atoi(portArg));
+
+  conn->addr_len = sizeof(struct sockaddr_in);
+
   return 0;
 }
 
@@ -74,9 +80,10 @@ void connectWithServer(ConnectionInfo *conn) {
       timeoutFlag = 0;
       break;
     }
+
   }  // while
 
-  if (timeoutFlag == 1) {
+  if (timeoutFlag == 1 || connectionTry >= MAX_REQ) {
     puts("Connection failed");
     close(conn->sock);
     exit(1);
