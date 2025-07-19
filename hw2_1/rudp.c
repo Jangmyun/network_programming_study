@@ -17,8 +17,8 @@ void setPacketHeader(Packet *packet, unsigned short packetType,
   packet->header.dataSize = dataSize;
 }
 
-void setPacket(Packet *packet, void *data) {
-  memcpy(&packet->data, data, sizeof(*data));
+void setPacket(Packet *packet, void *data, unsigned int dataSize) {
+  memcpy(&packet->data, data, dataSize);
 }
 
 int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
@@ -28,7 +28,7 @@ int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
   Packet sendPacket, recvPacket;
   initPacket(&sendPacket);
   setPacketHeader(&sendPacket, PKT_DATA, curr_seq, 0, dataSize);
-  setPacket(&sendPacket, data_buff);
+  setPacket(&sendPacket, data_buff, dataSize);
 
   struct timeval timeoutTime = {0, 500000};  // 0.5sec
 
