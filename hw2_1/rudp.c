@@ -122,7 +122,7 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
       if (recvPacket.header.seq == curr_seq) {  // seq 같으면 데이터 복사
         // data_buff에 packet data 복사
         memcpy(data_buff, recvPacket.data, recvPacket.header.dataSize);
-
+        setPacketHeader(&ackPacket, PKT_ACK, curr_seq, 1, 0);
         sendto(conn->sock, &ackPacket, PKT_SIZE, 0,
                (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
 
@@ -138,6 +138,7 @@ int r_recvfrom(ConnectionInfo *conn, void *data_buff, unsigned int curr_seq) {
 #endif
         return recvPacket.header.dataSize;
       } else {  // seq 다르면 ack 재전송]
+        setPacketHeader(&ackPacket, PKT_ACK, recvPacket.header.seq, 1, 0);
         sendto(conn->sock, &ackPacket, PKT_SIZE, 0,
                (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
         continue;
