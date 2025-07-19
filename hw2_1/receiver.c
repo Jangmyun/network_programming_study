@@ -121,7 +121,7 @@ void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize) {
   printf("[%s] Downloading...", filename);
 
   int read_len;
-  int recv_size;
+  int recv_size = 0;
   char buf[PKT_DATA_SIZE];
   unsigned int seq = 0;
 
