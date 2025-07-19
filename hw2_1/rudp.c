@@ -1,6 +1,6 @@
 #include "rudp.h"
 
-int timeout_flag = 0;
+int timeoutFlag = 0;
 
 void initPacket(Packet *packet) { memset(packet, 0, sizeof(Packet)); }
 
@@ -23,9 +23,9 @@ void setPacket(Packet *packet, char *data) {
 
 void timeout(int sig) {
   if (sig == SIGALRM) {
-    timeout_flag = 1;
+    timeoutFlag = 1;
 #ifdef DEBUG
-    printf("TIMEOUT\n");
+    puts("TIMEOUT");
 #endif
   }
 }

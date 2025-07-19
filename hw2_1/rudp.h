@@ -39,8 +39,8 @@ typedef struct {
   int sock;  // socket descriptor
   struct sockaddr_in addr;
   socklen_t addr_len;
-  struct sockaddr_in recv_addr;
-  socklen_t recv_addr_len;
+  struct sockaddr_in recv_addr;  // unused for client
+  socklen_t recv_addr_len;       // unused for client
 } ConnectionInfo;
 
 void initPacket(Packet *packet);
