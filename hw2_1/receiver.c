@@ -25,12 +25,12 @@ int setConnectionInfo(ConnectionInfo *conn, char *ipArg, char *portArg) {
     exit(1);
   }
 
-  memset(&conn->addr, 0, sizeof(conn->addr));
-  conn->addr.sin_family = AF_INET;
-  conn->addr.sin_addr.s_addr = inet_addr(ipArg);
-  conn->addr.sin_port = htons(atoi(portArg));
+  memset(&conn->recv_addr, 0, sizeof(conn->recv_addr));
+  conn->recv_addr.sin_family = AF_INET;
+  conn->recv_addr.sin_addr.s_addr = inet_addr(ipArg);
+  conn->recv_addr.sin_port = htons(atoi(portArg));
 
-  conn->addr_len = sizeof(struct sockaddr_in);
+  conn->recv_addr_len = sizeof(struct sockaddr_in);
 
   return 0;
 }
@@ -48,7 +48,7 @@ void connectWithServer(ConnectionInfo *conn) {
   int connectionTry = 0;
   while (connectionTry < MAX_REQ) {
     rw_len = sendto(conn->sock, &sendPacket, PKT_SIZE, 0,
-                    (struct sockaddr *)&conn->addr, conn->addr_len);
+                    (struct sockaddr *)&conn->recv_addr, conn->recv_addr_len);
     if (rw_len == -1) {
       perror("sendto() failed");
       connectionTry++;
@@ -69,7 +69,7 @@ void connectWithServer(ConnectionInfo *conn) {
       continue;
     }
 
-    if (conn->addr.sin_addr.s_addr != from_addr.sin_addr.s_addr) {
+    if (conn->recv_addr.sin_addr.s_addr != from_addr.sin_addr.s_addr) {
       connectionTry++;
       continue;
     }
