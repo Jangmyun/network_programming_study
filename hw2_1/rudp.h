@@ -2,6 +2,7 @@
 #define RUDP_H
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +51,10 @@ void initPacketHeader(Packet *packet);
 void setPacketHeader(Packet *packet, unsigned short packetType,
                      unsigned int seq, unsigned short ack,
                      unsigned int dataSize);
-void setPacket(Packet *packet, char *data);
+void setPacket(Packet *packet, void *data);
+
+int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
+             unsigned int curr_seq);
 
 void timeout(int sig);
 
