@@ -21,12 +21,13 @@ int main(int argc, char *argv[]) {
   if ((rw_len = r_recvfrom(&conn, filename, 0)) == -1) {
     exit(1);
   }
+  filename[rw_len] = 0;  // 문자열이므로 마지막 null 처리
 
   unsigned int filesize;
   if ((rw_len = r_recvfrom(&conn, &filesize, 0)) == -1) {
     exit(1);
   }
-  if (filesize < 0) {
+  if (filesize < 0 || rw_len != sizeof(unsigned int)) {
     fprintf(stderr, "Invalid Filesize\n");
     exit(1);
   }
