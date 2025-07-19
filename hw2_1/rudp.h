@@ -51,7 +51,7 @@ void initPacketHeader(Packet *packet);
 void setPacketHeader(Packet *packet, unsigned short packetType,
                      unsigned int seq, unsigned short ack,
                      unsigned int dataSize);
-void setPacket(Packet *packet, void *data);
+void setPacket(Packet *packet, void *data, unsigned int dataSize);
 
 int r_sendto(ConnectionInfo *conn, void *data_buff, unsigned int dataSize,
              unsigned int curr_seq);
