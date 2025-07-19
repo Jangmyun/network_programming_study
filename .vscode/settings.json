@@ -9,6 +9,8 @@
     "stop_and_wait.h": "c",
     "string.h": "c",
     "inet.h": "c",
-    "file_info.h": "c"
+    "file_info.h": "c",
+    "stdlib.h": "c",
+    "types.h": "c"
   }
 }
