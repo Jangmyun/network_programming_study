@@ -2,6 +2,7 @@
 
 int setConnectionInfo(ConnectionInfo *conn, char *ipArg, char *portArg);
 void connectWithServer(ConnectionInfo *conn);
+void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize);
 
 int main(int argc, char *argv[]) {
   ConnectionInfo conn;
@@ -14,6 +15,23 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in from_addr;
 
   connectWithServer(&conn);
+
+  // file 이름 받기
+  char filename[PKT_DATA_SIZE];
+  if ((rw_len = r_recvfrom(&conn, filename, 0)) == -1) {
+    exit(1);
+  }
+
+  unsigned int filesize;
+  if ((rw_len = r_recvfrom(&conn, &filesize, 0)) == -1) {
+    exit(1);
+  }
+  if (filesize < 0) {
+    fprintf(stderr, "Invalid Filesize\n");
+    exit(1);
+  }
+
+  receiveFile(&conn, filename, filesize);
 
   return 0;
 }
@@ -91,4 +109,36 @@ void connectWithServer(ConnectionInfo *conn) {
 
   puts("Connection Established");
   return;
+}
+
+void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize) {
+  FILE *fp = fopen(filename, "wb");
+  if (fp == NULL) {
+    perror("fopen() failed");
+    exit(1);
+  }
+
+  printf("[%s] Downloading...", filename);
+
+  int read_len;
+  int recv_size;
+  char buf[PKT_DATA_SIZE];
+  unsigned int seq = 0;
+
+  while (1) {
+    read_len = r_recvfrom(conn, buf, seq);
+    if (read_len == -1) {
+      fclose(fp);
+      exit(1);
+    }
+
+    fwrite(buf, 1, read_len, fp);
+    recv_size += read_len;
+    seq++;
+
+    printf("[%d] (%d/%d)\n", seq, recv_size);
+  }
+
+  fclose(fp);
+  puts("File downloaded successfully");
 }
