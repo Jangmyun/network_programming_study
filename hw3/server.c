@@ -82,6 +82,11 @@ int main(int argc, char *argv[]) {
 
           readn(i, buf, commandSize);
 
+#ifdef DEBUG
+          printf("Received command size: %ld\n", commandSize);
+          printf("Received command: %s\n", buf);
+#endif
+
           buf[strlen(buf) - 1] = '\0';
           char *command = strtok(buf, " ");
 
