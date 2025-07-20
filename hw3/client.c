@@ -40,9 +40,6 @@ int main(int argc, char *argv[]) {
     printf("%s\n", buf);
 #endif
 
-    // 입력받은 command 파싱
-    char *command = strtok(buf, " ");
-
     size_t commandSize = strlen(buf) + 1;
 
     writen(sock, &commandSize, sizeof(commandSize));
@@ -51,6 +48,9 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     printf("Sent command: %s (size: %ld)\n", buf, commandSize);
 #endif
+
+    // 입력받은 command 파싱
+    char *command = strtok(buf, " ");
 
     // q면 quit 메시지 보내고 반복문 종료
     if (!strcmp(command, "quit")) {
@@ -71,7 +71,6 @@ int main(int argc, char *argv[]) {
       cdResHandler(sock);
     } else if (!strcmp(command, "download")) {
     } else if (!strcmp(command, "upload")) {
-    } else if (!strcmp(command, "quit")) {
     } else {
       printf("Command not found : %s\n", command);
       continue;
