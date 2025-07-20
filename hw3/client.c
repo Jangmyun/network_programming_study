@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
     if (!strcmp(command, "ls")) {
       receiveCwdInfos(sock);
     } else if (!strcmp(command, "cd")) {
+      cdResHandler(sock);
     } else if (!strcmp(command, "download")) {
     } else if (!strcmp(command, "upload")) {
     } else {

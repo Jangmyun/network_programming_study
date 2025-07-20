@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 #endif
 
           if (!strcmp(command, "ls")) {
-            sendCwdInfos(clnt_sock);
+            sendCwdInfos(i);
           } else if (!strcmp(command, "cd")) {
             cdHandler(i, commandArg);
           } else if (!strcmp(command, "download")) {
