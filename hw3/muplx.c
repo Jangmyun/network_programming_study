@@ -68,7 +68,7 @@ int count_files(char *path) {
   return count;
 }
 
-FileInfo *read_files(char *path) {
+FileInfo *readFiles(char *path, int *file_num) {
   int count = 0;
   int filecount = count_files(path);
   if (path == NULL || filecount < 1) exit(1);
@@ -77,6 +77,8 @@ FileInfo *read_files(char *path) {
   if (fileinfos == NULL) {
     errorExit("malloc() failed");
   }
+
+  *file_num = filecount;
 
   DIR *dir = NULL;
   struct dirent *entry;
@@ -104,4 +106,43 @@ FileInfo *read_files(char *path) {
 
   closedir(dir);
   return fileinfos;
+}
+
+void sendCwdInfos(int clnt_sock) {
+  // 현재 디렉토리 정보 전송
+  char currentPathname[PATH_MAX];
+  getcwd(currentPathname, PATH_MAX);
+
+  writen(clnt_sock, currentPathname, PATH_MAX);
+
+  // 현재 디렉토리의 파일 개수 전송
+  int fileCount = 0;
+  FileInfo *fileInfos = readFiles(".", &fileCount);
+
+  writen(clnt_sock, &fileCount, sizeof(int));
+
+  for (int i = 0; i < fileCount; i++) {
+    writen(clnt_sock, &fileInfos[i], sizeof(FileInfo));
+
+    printf("[SEND FILEINFO] filename=%s | size=%ld | isDir=%d\n",
+           fileInfos[i].filename, fileInfos[i].size, fileInfos[i].isDir);
+  }
+}
+
+void receiveCwdInfos(int serv_sock) {
+  char currentPathname[PATH_MAX];
+  readn(serv_sock, currentPathname, PATH_MAX);
+
+  printf("<CURRENT DIRECTORY : %s>\n", currentPathname);
+
+  int fileCount = 0;
+  readn(serv_sock, &fileCount, sizeof(int));
+
+  FileInfo recvFileInfo;
+  for (int i = 0; i < fileCount; i++) {
+    readn(serv_sock, &recvFileInfo, sizeof(FileInfo));
+
+    printf("%d %6d %s\n", recvFileInfo.isDir, recvFileInfo.size,
+           recvFileInfo.filename);
+  }
 }

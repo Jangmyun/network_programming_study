@@ -26,5 +26,8 @@ ssize_t readn(int fd, void *data, size_t n);
 ssize_t writen(int fd, const void *data, size_t n);
 
 int count_files(char *path);
-FileInfo *readFiles(char *path);
+FileInfo *readFiles(char *path, int *fileCount);
+
+void sendCwdInfos();
+
 #endif
