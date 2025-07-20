@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in serv_addr, clnt_addr;
 
   struct timeval timeout;
-  const struct timeval TIMEOUT = {1, 0};
+  const struct timeval TIMEOUT = {5, 5000};
 
   socklen_t addr_size;
 
