@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
           if (commandArg == NULL) continue;
 
 #ifdef DEBUG
-          printf("Command:%s | Arg:%s\n", command, arg);
+          printf("Command:%s | Arg:%s\n", command, commandArg);
 #endif
 
           if (!strcmp(command, "ls")) {
