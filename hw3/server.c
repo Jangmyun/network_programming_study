@@ -125,6 +125,8 @@ void cdHandler(int sock, char *dest) {
     writen(sock, errorMessage, errorMessageLen);
     return;
   }
+  size_t ok = 0;
+  writen(sock, &ok, sizeof(ok));
 
   sendCwdInfos(sock);
 }
