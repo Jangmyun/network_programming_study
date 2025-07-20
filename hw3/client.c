@@ -31,9 +31,13 @@ int main(int argc, char *argv[]) {
   // client는 계속해서 명령어 처리
   while (1) {
     puts("<Available Command List>");
-    puts("ls, cd <dirname>, download <filename>, upload <filename>");
-    printf("Enter input (q for quit) > ");
+    puts("ls, cd <dirname>, download <filename>, upload <filename>, quit");
+    printf("Enter input > ");
     fgets(buf, BUF_SIZE, stdin);
+
+#ifdef DEBUG
+    printf("%s\n", buf);
+#endif
 
     // 입력받은 command 파싱
     buf[strlen(buf) - 1] = '\0';
