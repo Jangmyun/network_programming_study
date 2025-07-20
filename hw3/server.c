@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
     timeout = TIMEOUT;
 
-    fd_num = select(fd_max + 1, &tempReads, &tempWrites, 0, &timeout);
+    fd_num = select(fd_max + 1, &tempReads, 0, 0, &timeout);
     if (fd_num == -1) break;
     if (fd_num == 0) continue;
 
