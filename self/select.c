@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
   char buf[BUF_SIZE];
   struct timeval timeout;
 
-  FD_ZERO(&read);
+  FD_ZERO(&reads);
   FD_SET(0, &reads);
 
   while (1) {
