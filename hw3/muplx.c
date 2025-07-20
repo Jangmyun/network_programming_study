@@ -142,7 +142,7 @@ void receiveCwdInfos(int serv_sock) {
   for (int i = 0; i < fileCount; i++) {
     readn(serv_sock, &recvFileInfo, sizeof(FileInfo));
 
-    printf("%d %6d %s\n", recvFileInfo.isDir, recvFileInfo.size,
+    printf("%d %6ld %s\n", recvFileInfo.isDir, recvFileInfo.size,
            recvFileInfo.filename);
   }
 }
