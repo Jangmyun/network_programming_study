@@ -95,9 +95,7 @@ int main(int argc, char *argv[]) {
           char *commandArg = strtok(NULL, " ");
           if (commandArg == NULL) continue;
 
-#ifdef DEBUG
-          printf("Command:%s | Arg:%s\n", command, commandArg);
-#endif
+          printf("Command:%s Arg:%s\n", command, commandArg);
 
           if (!strcmp(command, "ls")) {
             sendCwdInfos(i);
@@ -125,6 +123,7 @@ void cdHandler(int sock, char *dest) {
     writen(sock, errorMessage, errorMessageLen);
     return;
   }
+  fputs("cd success", stdout);
   size_t ok = 0;
   writen(sock, &ok, sizeof(ok));
 
