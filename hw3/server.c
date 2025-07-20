@@ -57,6 +57,9 @@ int main(int argc, char *argv[]) {
     if (fd_num == 0) continue;
 
     for (int i = 0; i <= fd_max; i++) {
+#ifdef DEBUG
+      printf("check:%dth sd\n", i);
+#endif
       // i번째 가 readfds에 속했을 때
       if (FD_ISSET(i, &tempReads)) {
         // 서버 소켓으로 connect 요청 시 수락하고 cwd 정보 전송
