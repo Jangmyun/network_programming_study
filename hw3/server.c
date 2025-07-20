@@ -85,12 +85,13 @@ int main(int argc, char *argv[]) {
 
           readn(i, buf, commandSize);
 
+          buf[commandSize - 1] = '\0';
+
 #ifdef DEBUG
           printf("Received command size: %ld\n", commandSize);
-          printf("Received command: %s\n", buf);
+          printf("Received command: \"%s\"\n", buf);
 #endif
 
-          buf[strlen(buf) - 1] = '\0';
           char *command = strtok(buf, " ");
 
           if (!strcmp(command, "q")) {
@@ -102,9 +103,9 @@ int main(int argc, char *argv[]) {
 
           char *commandArg = strtok(NULL, " ");
           if (commandArg == NULL) continue;
-
+#ifdef DEBUG
           printf("Command:%s Arg:%s\n", command, commandArg);
-
+#endif
           if (!strcmp(command, "ls")) {
             sendCwdInfos(i);
           } else if (!strcmp(command, "cd")) {

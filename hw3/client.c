@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     buf[strcspn(buf, "\n")] = 0;
 
 #ifdef DEBUG
-    printf("%s\n", buf);
+    printf("\"%s\"\n", buf);
 #endif
 
     size_t commandSize = strlen(buf) + 1;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     writen(sock, buf, commandSize);
 
 #ifdef DEBUG
-    printf("Sent command: %s (size: %ld)\n", buf, commandSize);
+    printf("Sent command: \"%s\" (size: %ld)\n", buf, commandSize);
 #endif
 
     // 입력받은 command 파싱
