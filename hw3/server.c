@@ -1,5 +1,7 @@
 #include "muplx.h"
 
+void cdHandler(int sock, char *dest);
+
 int main(int argc, char *argv[]) {
   int serv_sock, clnt_sock;
   struct sockaddr_in serv_addr, clnt_addr;
@@ -42,13 +44,11 @@ int main(int argc, char *argv[]) {
   fd_set writes, tempWrites;
 
   FD_ZERO(&reads);
-  FD_ZERO(&writes);
   FD_SET(serv_sock, &reads);
   fd_max = serv_sock;
 
   while (1) {
     tempReads = reads;
-    tempWrites = writes;
 
     timeout = TIMEOUT;
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i <= fd_max; i++) {
       // i번째 가 readfds에 속했을 때
       if (FD_ISSET(i, &tempReads)) {
-        // 서버 소켓으로 connect 요청 시 수락하고
+        // 서버 소켓으로 connect 요청 시 수락하고 cwd 정보 전송
         if (i == serv_sock) {
           addr_size = sizeof(clnt_addr);
           clnt_sock =
@@ -69,11 +69,62 @@ int main(int argc, char *argv[]) {
           printf("Client connected: %d\n", clnt_sock);
 
           sendCwdInfos(clnt_sock);
+        } else {
+          size_t commandSize;
+          rw_len = readn(i, &commandSize, sizeof(commandSize));
+          if (rw_len == 0) {
+            fprintf(stderr, "Invalid Command\n");
+            close(i);
+            FD_CLR(i, &reads);
+            FD_CLR(i, &writes);
+            continue;
+          }
+
+          readn(i, buf, commandSize);
+
+          buf[strlen(buf) - 1] = '\0';
+          char *command = strtok(buf, " ");
+
+          if (!strcmp(command, "q")) {
+            close(i);
+            FD_CLR(i, &reads);
+            FD_CLR(i, &writes);
+            continue;
+          }
+
+          char *commandArg = strtok(NULL, " ");
+          if (commandArg == NULL) continue;
+
+#ifdef DEBUG
+          printf("Command:%s | Arg:%s\n", command, arg);
+#endif
+
+          if (!strcmp(command, "ls")) {
+            sendCwdInfos(clnt_sock);
+          } else if (!strcmp(command, "cd")) {
+            cdHandler(i, commandArg);
+          } else if (!strcmp(command, "download")) {
+          } else if (!strcmp(command, "upload")) {
+          } else {
+            printf("Command not found : %s\n", command);
+            continue;
+          }
         }
-      } else if (FD_ISSET(i, &tempWrites)) {
       }
     }
   }
 
   return 0;
+}
+
+void cdHandler(int sock, char *dest) {
+  if (chdir(dest) == -1) {
+    char *errorMessage = "chdir() failed";
+    size_t errorMessageLen = strlen(errorMessage) + 1;
+    writen(sock, &errorMessageLen, sizeof(errorMessageLen));
+    writen(sock, errorMessage, errorMessageLen);
+    return;
+  }
+
+  sendCwdInfos(sock);
 }

@@ -1,5 +1,8 @@
 #include "muplx.h"
 
+int receiveResponse(int sock);
+void cdResHandler(int sock);
+
 int main(int argc, char *argv[]) {
   int sock = 0;
   char buf[BUF_SIZE];
@@ -50,12 +53,15 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     printf("Command:%s | Arg:%s\n", command, arg);
 #endif
+    {
+      size_t commandSize = strlen(buf) + 1;
 
-    size_t commandSize = strlen(buf) + 1;
-    writen(sock, &commandSize, sizeof(commandSize));
-    writen(sock, buf, commandSize);
+      writen(sock, &commandSize, sizeof(commandSize));
+      writen(sock, buf, commandSize);
+    }
 
     if (!strcmp(command, "ls")) {
+      receiveCwdInfos(sock);
     } else if (!strcmp(command, "cd")) {
     } else if (!strcmp(command, "download")) {
     } else if (!strcmp(command, "upload")) {
@@ -67,4 +73,28 @@ int main(int argc, char *argv[]) {
 
   close(sock);
   return 0;
+}
+
+int receiveResponse(int sock) {
+  size_t responseSize;
+  readn(sock, &responseSize, sizeof(responseSize));
+
+  if (responseSize == 0) {
+    return 0;
+  }
+
+  char buf[responseSize];
+  readn(sock, buf, responseSize);
+  buf[responseSize - 1] = '\0';
+
+  fputs(buf, stderr);
+  return -1;
+}
+
+void cdResHandler(int sock) {
+  if (receiveResponse(sock) == -1) {
+    return;
+  }
+
+  receiveCwdInfos(sock);
 }
