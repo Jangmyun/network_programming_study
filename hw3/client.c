@@ -43,8 +43,15 @@ int main(int argc, char *argv[]) {
     buf[strlen(buf) - 1] = '\0';
     char *command = strtok(buf, " ");
 
+    {
+      size_t commandSize = strlen(buf) + 1;
+
+      writen(sock, &commandSize, sizeof(commandSize));
+      writen(sock, buf, commandSize);
+    }
+
     // q면 quit 메시지 보내고 반복문 종료
-    if (!strcmp(command, "q")) {
+    if (!strcmp(command, "quit")) {
       writen(sock, "quit", 5);
       puts("Bye!");
       break;
@@ -57,12 +64,6 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     printf("Command:%s | Arg:%s\n", command, commandArg);
 #endif
-    {
-      size_t commandSize = strlen(buf) + 1;
-
-      writen(sock, &commandSize, sizeof(commandSize));
-      writen(sock, buf, commandSize);
-    }
 
     if (!strcmp(command, "ls")) {
       receiveCwdInfos(sock);
