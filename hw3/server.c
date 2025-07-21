@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-void serverThreadFunction(void *arg) {
+void *serverThreadFunction(void *arg) {
   int sock = *(int *)arg;
   char buf[BUF_SIZE];
 
