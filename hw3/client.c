@@ -60,15 +60,18 @@ int main(int argc, char *argv[]) {
       break;
     }
 
+    if (!strcmp(command, "ls")) {
+      receiveCwdInfos(sock);
+      continue;
+    }
+
     // command의 argument 파싱
     char *commandArg = strtok(NULL, " ");
     if (commandArg == NULL) continue;
 
     printf("Command:%s Arg:%s\n", command, commandArg);
 
-    if (!strcmp(command, "ls")) {
-      receiveCwdInfos(sock);
-    } else if (!strcmp(command, "cd")) {
+    if (!strcmp(command, "cd")) {
       cdResHandler(sock);
     } else if (!strcmp(command, "download")) {
       downloadResHandler(sock, commandArg);
