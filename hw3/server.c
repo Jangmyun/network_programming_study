@@ -13,9 +13,6 @@ int main(int argc, char *argv[]) {
   int serv_sock, clnt_sock;
   struct sockaddr_in serv_addr, clnt_addr;
 
-  struct timeval timeout;
-  const struct timeval TIMEOUT = {5, 5000};
-
   socklen_t addr_size;
 
   int fd_max, fd_num;
@@ -60,9 +57,7 @@ int main(int argc, char *argv[]) {
   while (1) {
     tempReads = reads;
 
-    timeout = TIMEOUT;
-
-    fd_num = select(fd_max + 1, &tempReads, 0, 0, &timeout);
+    fd_num = select(fd_max + 1, &tempReads, 0, 0, NULL);
     if (fd_num == -1) break;
     if (fd_num == 0) continue;
 
