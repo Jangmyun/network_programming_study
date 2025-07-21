@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
           if (fd_max < clnt_sock) fd_max = clnt_sock;
           printf("Client connected: %d\n", clnt_sock);
 
-          int ret =
-              pthread_create(&tid, NULL, serverThreadFunction, (void *)&i);
+          int ret = pthread_create(&tid, NULL, serverThreadFunction,
+                                   (void *)&clnt_sock);
           if (ret != 0) {
             fprintf(stderr, "pthread_create() failed %s\n", strerror(errno));
           }
