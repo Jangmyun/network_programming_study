@@ -2,6 +2,8 @@
 
 int receiveResponse(int sock);
 void cdResHandler(int sock);
+void downloadResHandler(int sock, char *filename);
+void uploadResHandler(int sock, char *filename);
 
 int main(int argc, char *argv[]) {
   int sock = 0;
@@ -70,6 +72,7 @@ int main(int argc, char *argv[]) {
     } else if (!strcmp(command, "cd")) {
       cdResHandler(sock);
     } else if (!strcmp(command, "download")) {
+      downloadResHandler(sock, commandArg);
     } else if (!strcmp(command, "upload")) {
     } else {
       printf("Command not found : %s\n", command);
@@ -104,4 +107,72 @@ void cdResHandler(int sock) {
   }
 
   receiveCwdInfos(sock);
+}
+
+void downloadResHandler(int sock, char *filename) {
+  if (receiveResponse(sock) == -1) {
+    fputs("fopen() failed", stderr);
+    return;
+  }
+
+  size_t fileSize;
+  readn(sock, &fileSize, sizeof(fileSize));
+
+  FILE *fp = fopen(filename, "wb");
+  if (fp == NULL) {
+    perror("fopen() failed");
+    return;
+  }
+
+  char buf[BUF_SIZE];
+  size_t leftBytes = fileSize;
+  int read_count = 0;
+  while (leftBytes > 0) {
+    if (leftBytes < BUF_SIZE) {
+      read_count = readn(sock, buf, leftBytes);
+      fwrite((void *)buf, 1, leftBytes, fp);
+      leftBytes -= read_count;
+      break;
+    }
+
+    read_count = readn(sock, buf, BUF_SIZE);
+    fwrite((void *)buf, 1, read_count, fp);
+    leftBytes -= read_count;
+  }
+
+  fclose(fp);
+  printf("Download [%s] Success\n", filename);
+}
+
+void uploadResHandler(int sock, char *filename) {
+  FILE *fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    char *errorMessage = "fopen() failed";
+    size_t errorMessageLen = strlen(errorMessage) + 1;
+    writen(sock, &errorMessageLen, sizeof(errorMessageLen));
+    writen(sock, errorMessage, errorMessageLen);
+    return;
+  }
+
+  size_t ok = 0;
+  writen(sock, &ok, sizeof(ok));  // 성공 메시지
+
+  fseek(fp, 0, SEEK_END);
+  size_t fileSize = ftell(fp);
+  fseek(fp, 0, SEEK_SET);  // 또는 rewind(fp);
+
+  writen(sock, &fileSize, sizeof(fileSize));  // 파일 크기 전송
+
+  char buf[BUF_SIZE];
+  int read_count;
+  while (1) {
+    read_count = fread((void *)buf, 1, BUF_SIZE, fp);
+    if (read_count < BUF_SIZE) {
+      write(sock, buf, read_count);
+      break;
+    }
+    write(sock, buf, BUF_SIZE);
+  }
+
+  fclose(fp);
 }

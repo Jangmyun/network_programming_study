@@ -1,6 +1,8 @@
 #include "muplx.h"
 
 void cdHandler(int sock, char *dest);
+void downloadHandler(int sock, char *filename);
+void uploadHandler(int sock, char *filename);
 
 int main(int argc, char *argv[]) {
   int serv_sock, clnt_sock;
@@ -94,7 +96,7 @@ int main(int argc, char *argv[]) {
 
           char *command = strtok(buf, " ");
 
-          if (!strcmp(command, "q")) {
+          if (!strcmp(command, "quit")) {
             close(i);
             FD_CLR(i, &reads);
             FD_CLR(i, &writes);
@@ -111,6 +113,7 @@ int main(int argc, char *argv[]) {
           } else if (!strcmp(command, "cd")) {
             cdHandler(i, commandArg);
           } else if (!strcmp(command, "download")) {
+            downloadHandler(i, commandArg);
           } else if (!strcmp(command, "upload")) {
           } else {
             printf("Command not found : %s\n", command);
@@ -137,4 +140,73 @@ void cdHandler(int sock, char *dest) {
   writen(sock, &ok, sizeof(ok));
 
   sendCwdInfos(sock);
+}
+
+void downloadHandler(int sock, char *filename) {
+  FILE *fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    char *errorMessage = "fopen() failed";
+    size_t errorMessageLen = strlen(errorMessage) + 1;
+    writen(sock, &errorMessageLen, sizeof(errorMessageLen));
+    writen(sock, errorMessage, errorMessageLen);
+    return;
+  }
+
+  size_t ok = 0;
+  writen(sock, &ok, sizeof(ok));
+
+  fseek(fp, 0, SEEK_END);
+  size_t fileSize = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+
+  writen(sock, &fileSize, sizeof(fileSize));
+
+  char buf[BUF_SIZE];
+  int read_count = 0;
+  while (1) {
+    read_count = fread((void *)buf, 1, BUF_SIZE, fp);
+    if (read_count < BUF_SIZE) {
+      write(sock, buf, read_count);
+      break;
+    }
+    write(sock, buf, BUF_SIZE);
+  }
+
+  fclose(fp);
+}
+
+void uploadHandler(int sock, char *filename) {
+  FILE *fp = fopen(filename, "wb");
+  if (fp == NULL) {
+    char *errorMessage = "fopen() failed";
+    size_t errorMessageLen = strlen(errorMessage) + 1;
+    writen(sock, &errorMessageLen, sizeof(errorMessageLen));
+    writen(sock, errorMessage, errorMessageLen);
+    return;
+  }
+
+  size_t ok = 0;
+  writen(sock, &ok, sizeof(ok));  // 성공 응답
+
+  size_t fileSize;
+  readn(sock, &fileSize, sizeof(fileSize));
+
+  char buf[BUF_SIZE];
+  size_t leftBytes = fileSize;
+  int read_count;
+  while (leftBytes > 0) {
+    if (leftBytes < BUF_SIZE) {
+      read_count = readn(sock, buf, leftBytes);
+      fwrite((void *)buf, 1, leftBytes, fp);
+      leftBytes -= read_count;
+      break;
+    }
+
+    read_count = readn(sock, buf, BUF_SIZE);
+    fwrite((void *)buf, 1, read_count, fp);
+    leftBytes -= read_count;
+  }
+
+  fclose(fp);
+  printf("Upload [%s] Success\n", filename);
 }
