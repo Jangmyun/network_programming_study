@@ -3,7 +3,7 @@
 
 #include "muplx.h"
 
-void serverThreadFunction(void *arg);
+void *serverThreadFunction(void *arg);
 
 void cdHandler(int sock, char *dest);
 void downloadHandler(int sock, char *filename);
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
           int ret =
               pthread_create(&tid, NULL, serverThreadFunction, (void *)&i);
           if (ret != 0) {
-            fprintf(stderr, "pthread_create() failed %s\n", strerr(errno));
+            fprintf(stderr, "pthread_create() failed %s\n", strerror(errno));
           }
 
           pthread_detach(tid);
@@ -108,13 +108,13 @@ void *serverThreadFunction(void *arg) {
   while (1) {
     rw_len = readn(sock, &commandSize, sizeof(commandSize));
     if (rw_len <= 0) {
-      fprintf(stderr, "Connection Lost (%d)\n");
+      fprintf(stderr, "Connection Lost (%d)\n", sock);
       break;
     }
 
     rw_len = readn(sock, buf, commandSize);
     if (rw_len <= 0) {
-      fprintf(stderr, "Connection Lost (%d)\n");
+      fprintf(stderr, "Connection Lost (%d)\n", sock);
       break;
     }
 
