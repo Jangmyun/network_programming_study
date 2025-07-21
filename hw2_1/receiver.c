@@ -1,3 +1,5 @@
+#include <sys/time.h>
+
 #include "rudp.h"
 
 int setConnectionInfo(ConnectionInfo *conn, char *ipArg, char *portArg);
@@ -119,12 +121,14 @@ void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize) {
     exit(1);
   }
 
-  printf("[%s] Downloading...\n", filename);
-
   int read_len;
   int recv_size = 0;
   char buf[PKT_DATA_SIZE];
   unsigned int seq = 0;
+  struct timeval start, end;
+
+  printf("[%s] Downloading...\n", filename);
+  gettimeofday(&start, NULL);
 
   while (recv_size < filesize) {
     read_len = r_recvfrom(conn, buf, seq);
@@ -140,6 +144,13 @@ void receiveFile(ConnectionInfo *conn, char *filename, unsigned int filesize) {
     printf("[%d] (%d/%d)\n", seq, recv_size, filesize);
   }
 
+  gettimeofday(&end, NULL);
+
+  double duration =
+      (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+  double throughput = filesize / duration;
+
   fclose(fp);
-  puts("File downloaded successfully");
+  printf("File downloaded successfully, throughput: (%d/%f) = %f\n", filesize,
+         duration, throughput);
 }
