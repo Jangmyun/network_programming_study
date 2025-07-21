@@ -72,7 +72,6 @@ int main(int argc, char *argv[]) {
           addr_size = sizeof(clnt_addr);
           clnt_sock =
               accept(serv_sock, (struct sockaddr *)&clnt_addr, &addr_size);
-          FD_SET(clnt_sock, &reads);
           if (fd_max < clnt_sock) fd_max = clnt_sock;
           printf("Client connected: %d\n", clnt_sock);
 
