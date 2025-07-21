@@ -1,5 +1,7 @@
 #include "muplx.h"
 
+void serverThreadFunction(void *arg);
+
 void cdHandler(int sock, char *dest);
 void downloadHandler(int sock, char *filename);
 void uploadHandler(int sock, char *filename);
@@ -41,13 +43,6 @@ int main(int argc, char *argv[]) {
   if (listen(serv_sock, 5) == -1) {
     errorExit("listen() error");
   }
-
-  fd_set reads, tempReads;
-  fd_set writes, tempWrites;
-
-  FD_ZERO(&reads);
-  FD_SET(serv_sock, &reads);
-  fd_max = serv_sock;
 
   puts("-Server On-");
 
@@ -128,6 +123,68 @@ int main(int argc, char *argv[]) {
   }
 
   return 0;
+}
+
+void serverThreadFunction(void *arg) {
+  int sock = *(int *)arg;
+  char buf[BUF_SIZE];
+
+  size_t commandSize;
+  int rw_len;
+
+  sendCwdInfos(sock);
+
+  while (1) {
+    rw_len = readn(sock, &commandSize, sizeof(commandSize));
+    if (rw_len <= 0) {
+      fprintf(stderr, "Connection Lost (%d)\n");
+      break;
+    }
+
+    rw_len = readn(sock, buf, commandSize);
+    if (rw_len <= 0) {
+      fprintf(stderr, "Connection Lost (%d)\n");
+      break;
+    }
+
+    buf[commandSize - 1] = '\0';
+
+#ifdef DEBUG
+    printf("Received command size: %ld\n", commandSize);
+    printf("Received command: \"%s\"\n", buf);
+#endif
+
+    char *command = strtok(buf, " ");
+
+    if (!strcmp(command, "quit")) {
+      printf("Client %d quit\n", sock);
+      break;
+    }
+
+    char *commandArg = strtok(NULL, " ");
+    if (commandArg == NULL) continue;
+
+#ifdef DEBUG
+    printf("Sock:%d, Command:%s, Arg:%s\n", sock, command, commandArg);
+#endif
+
+    if (!strcmp(command, "ls")) {
+      sendCwdInfos(sock);
+    } else if (!strcmp(command, "cd")) {
+      cdHandler(sock, commandArg);
+    } else if (!strcmp(command, "download")) {
+      downloadHandler(sock, commandArg);
+    } else if (!strcmp(command, "upload")) {
+      uploadHandler(sock, commandArg);
+    } else {
+      printf("Command not found : %s (%d)\n", command, sock);
+      continue;
+    }
+
+  }  // while
+
+  close(sock);
+  return NULL;
 }
 
 void cdHandler(int sock, char *dest) {
