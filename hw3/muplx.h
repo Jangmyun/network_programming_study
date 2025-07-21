@@ -31,4 +31,6 @@ FileInfo *readFiles(char *path, int *fileCount);
 void sendCwdInfos(int clnt_sock);
 void receiveCwdInfos(int serv_sock);
 
+int receiveResponse(int sock);
+
 #endif

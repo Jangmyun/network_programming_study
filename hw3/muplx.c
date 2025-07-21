@@ -146,3 +146,19 @@ void receiveCwdInfos(int serv_sock) {
            recvFileInfo.filename);
   }
 }
+
+int receiveResponse(int sock) {
+  size_t responseSize;
+  readn(sock, &responseSize, sizeof(responseSize));
+
+  if (responseSize == 0) {
+    return 0;
+  }
+
+  char buf[responseSize];
+  readn(sock, buf, responseSize);
+  buf[responseSize - 1] = '\0';
+
+  fputs(buf, stderr);
+  return -1;
+}
