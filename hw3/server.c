@@ -115,6 +115,7 @@ int main(int argc, char *argv[]) {
           } else if (!strcmp(command, "download")) {
             downloadHandler(i, commandArg);
           } else if (!strcmp(command, "upload")) {
+            uploadHandler(i, commandArg);
           } else {
             printf("Command not found : %s\n", command);
             continue;
@@ -143,8 +144,14 @@ void cdHandler(int sock, char *dest) {
 }
 
 void downloadHandler(int sock, char *filename) {
+#ifdef DEBUG
+  printf("Send %s\n", filename);
+#endif
   FILE *fp = fopen(filename, "rb");
   if (fp == NULL) {
+#ifdef DEBUG
+    printf("fopen() failed\n");
+#endif
     char *errorMessage = "fopen() failed";
     size_t errorMessageLen = strlen(errorMessage) + 1;
     writen(sock, &errorMessageLen, sizeof(errorMessageLen));
@@ -152,12 +159,18 @@ void downloadHandler(int sock, char *filename) {
     return;
   }
 
+#ifdef DEBUG
+  printf("fopen() success\n");
+#endif
+
   size_t ok = 0;
   writen(sock, &ok, sizeof(ok));
 
   fseek(fp, 0, SEEK_END);
   size_t fileSize = ftell(fp);
   fseek(fp, 0, SEEK_SET);
+
+  printf("Sending %s ...\n", filename);
 
   writen(sock, &fileSize, sizeof(fileSize));
 

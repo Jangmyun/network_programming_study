@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
     } else if (!strcmp(command, "download")) {
       downloadResHandler(sock, commandArg);
     } else if (!strcmp(command, "upload")) {
+      uploadResHandler(sock, commandArg);
     } else {
       printf("Command not found : %s\n", command);
       continue;
