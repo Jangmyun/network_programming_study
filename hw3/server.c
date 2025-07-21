@@ -131,6 +131,10 @@ void *serverThreadFunction(void *arg) {
       printf("Client %d quit\n", sock);
       break;
     }
+    if (!strcmp(command, "ls")) {
+      sendCwdInfos(sock);
+      continue;
+    }
 
     char *commandArg = strtok(NULL, " ");
     if (commandArg == NULL) continue;
@@ -139,9 +143,7 @@ void *serverThreadFunction(void *arg) {
     printf("Sock:%d, Command:%s, Arg:%s\n", sock, command, commandArg);
 #endif
 
-    if (!strcmp(command, "ls")) {
-      sendCwdInfos(sock);
-    } else if (!strcmp(command, "cd")) {
+    if (!strcmp(command, "cd")) {
       cdHandler(sock, commandArg);
     } else if (!strcmp(command, "download")) {
       downloadHandler(sock, commandArg);
