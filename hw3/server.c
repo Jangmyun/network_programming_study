@@ -189,17 +189,16 @@ void downloadHandler(int sock, char *filename) {
 }
 
 void uploadHandler(int sock, char *filename) {
-  FILE *fp = fopen(filename, "wb");
-  if (fp == NULL) {
-    char *errorMessage = "fopen() failed";
-    size_t errorMessageLen = strlen(errorMessage) + 1;
-    writen(sock, &errorMessageLen, sizeof(errorMessageLen));
-    writen(sock, errorMessage, errorMessageLen);
+  if (receiveResponse(sock) == -1) {
+    fputs("client fopen() failed", stderr);
     return;
   }
 
-  size_t ok = 0;
-  writen(sock, &ok, sizeof(ok));  // 성공 응답
+  FILE *fp = fopen(filename, "wb");
+  if (fp == NULL) {
+    perror("fopen() failed");
+    return;
+  }
 
   size_t fileSize;
   readn(sock, &fileSize, sizeof(fileSize));

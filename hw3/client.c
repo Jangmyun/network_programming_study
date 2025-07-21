@@ -1,6 +1,5 @@
 #include "muplx.h"
 
-int receiveResponse(int sock);
 void cdResHandler(int sock);
 void downloadResHandler(int sock, char *filename);
 void uploadResHandler(int sock, char *filename);
@@ -85,22 +84,6 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-int receiveResponse(int sock) {
-  size_t responseSize;
-  readn(sock, &responseSize, sizeof(responseSize));
-
-  if (responseSize == 0) {
-    return 0;
-  }
-
-  char buf[responseSize];
-  readn(sock, buf, responseSize);
-  buf[responseSize - 1] = '\0';
-
-  fputs(buf, stderr);
-  return -1;
-}
-
 void cdResHandler(int sock) {
   if (receiveResponse(sock) == -1) {
     fputs("cd failed", stderr);
@@ -112,7 +95,7 @@ void cdResHandler(int sock) {
 
 void downloadResHandler(int sock, char *filename) {
   if (receiveResponse(sock) == -1) {
-    fputs("fopen() failed", stderr);
+    fputs("server fopen() failed", stderr);
     return;
   }
 
