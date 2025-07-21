@@ -125,7 +125,7 @@ void downloadResHandler(int sock, char *filename) {
   }
 
   fclose(fp);
-  printf("Download [%s] Success\n", filename);
+  printf("Downloading [%s] Success\n", filename);
 }
 
 void uploadResHandler(int sock, char *filename) {
@@ -159,4 +159,5 @@ void uploadResHandler(int sock, char *filename) {
   }
 
   fclose(fp);
+  printf("Uploading [%s] Success\n", filename);
 }

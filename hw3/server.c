@@ -49,6 +49,8 @@ int main(int argc, char *argv[]) {
   FD_SET(serv_sock, &reads);
   fd_max = serv_sock;
 
+  puts("-Server On-");
+
   while (1) {
     tempReads = reads;
 
@@ -186,6 +188,7 @@ void downloadHandler(int sock, char *filename) {
   }
 
   fclose(fp);
+  printf("Uploading [%s] Success\n", filename);
 }
 
 void uploadHandler(int sock, char *filename) {
@@ -220,5 +223,5 @@ void uploadHandler(int sock, char *filename) {
   }
 
   fclose(fp);
-  printf("Upload [%s] Success\n", filename);
+  printf("Downloading [%s] Success\n", filename);
 }
