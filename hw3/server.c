@@ -1,3 +1,6 @@
+#include <errno.h>
+#include <pthread.h>
+
 #include "muplx.h"
 
 void serverThreadFunction(void *arg);
@@ -44,8 +47,16 @@ int main(int argc, char *argv[]) {
     errorExit("listen() error");
   }
 
+  fd_set reads, tempReads;
+  fd_set writes, tempWrites;
+
+  FD_ZERO(&reads);
+  FD_SET(serv_sock, &reads);
+  fd_max = serv_sock;
+
   puts("-Server On-");
 
+  pthread_t tid;
   while (1) {
     tempReads = reads;
 
@@ -70,53 +81,13 @@ int main(int argc, char *argv[]) {
           if (fd_max < clnt_sock) fd_max = clnt_sock;
           printf("Client connected: %d\n", clnt_sock);
 
-          sendCwdInfos(clnt_sock);
-        } else {
-          size_t commandSize;
-          rw_len = readn(i, &commandSize, sizeof(commandSize));
-          if (rw_len == 0) {
-            fprintf(stderr, "Invalid Command\n");
-            close(i);
-            FD_CLR(i, &reads);
-            FD_CLR(i, &writes);
-            continue;
+          int ret =
+              pthread_create(&tid, NULL, serverThreadFunction, (void *)&i);
+          if (ret != 0) {
+            fprintf(stderr, "pthread_create() failed %s\n", strerr(errno));
           }
 
-          readn(i, buf, commandSize);
-
-          buf[commandSize - 1] = '\0';
-
-#ifdef DEBUG
-          printf("Received command size: %ld\n", commandSize);
-          printf("Received command: \"%s\"\n", buf);
-#endif
-
-          char *command = strtok(buf, " ");
-
-          if (!strcmp(command, "quit")) {
-            close(i);
-            FD_CLR(i, &reads);
-            FD_CLR(i, &writes);
-            continue;
-          }
-
-          char *commandArg = strtok(NULL, " ");
-          if (commandArg == NULL) continue;
-#ifdef DEBUG
-          printf("Command:%s Arg:%s\n", command, commandArg);
-#endif
-          if (!strcmp(command, "ls")) {
-            sendCwdInfos(i);
-          } else if (!strcmp(command, "cd")) {
-            cdHandler(i, commandArg);
-          } else if (!strcmp(command, "download")) {
-            downloadHandler(i, commandArg);
-          } else if (!strcmp(command, "upload")) {
-            uploadHandler(i, commandArg);
-          } else {
-            printf("Command not found : %s\n", command);
-            continue;
-          }
+          pthread_detach(tid);
         }
       }
     }
