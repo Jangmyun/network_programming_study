@@ -10,6 +10,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+extern pthread_mutex_t display_mutex;
+
 void clrscr(void);          // clear screen
 void gotoxy(int x, int y);  // move cursor to (x, y) coordinate
 

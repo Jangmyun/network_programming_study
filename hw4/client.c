@@ -12,8 +12,12 @@ char inputStr[MAX_INPUT_LEN];
 #define BS 8
 #define DEL 127
 
+#define INPUT_START_POS 14
+
 // Current Cursor Position
 int CURSOR_X, CURSOR_Y;
+
+void refreshInput();
 
 int main(int argc, char *argv[]) {
   // if (argc != 3) {
@@ -36,12 +40,14 @@ int main(int argc, char *argv[]) {
   int screenWidth = getWindowWidth();
   int screenHeight = getWindowHeight();
 
-  CURSOR_X = 13;
+  CURSOR_X = INPUT_START_POS;
   CURSOR_Y = 1;
 
   clrscr();
 
   printf("\033[01;33mSearch Word:\033[0m ");
+
+  gotoxy(CURSOR_X, CURSOR_Y);
 
   while (1) {
     // 키보드 입력 처리
@@ -54,11 +60,17 @@ int main(int argc, char *argv[]) {
 
       // 입력 문자가 알파벳이나 스페이스일 경우
       if (isalpha(key) || key == ' ') {
-        inputStr[currentInputLen++] = key;
-        inputStr[currentInputLen] = '\0';
+        if (currentInputLen < MAX_INPUT_LEN - 1) {
+          inputStr[currentInputLen++] = key;
+          inputStr[currentInputLen] = '\0';
+          refreshInput();
+        }
       }
-      if (key == BS || key == DEL) {
-        inputStr[--currentInputLen] = '\0';
+      if (key == BS) {
+        if (currentInputLen > 0) {
+          inputStr[--currentInputLen] = '\0';
+          refreshInput();
+        }
       }
     }
     usleep(10000);
@@ -66,4 +78,15 @@ int main(int argc, char *argv[]) {
   PrintXY(1, 2, "Bye!\n");
 
   return 0;
+}
+
+void refreshInput() {
+  pthread_mutex_lock(&display_mutex);
+  gotoxy(INPUT_START_POS, 1);
+
+  printf("\033[K");
+  printf("%s", inputStr);
+
+  fflush(stdout);
+  pthread_mutex_unlock(&display_mutex);
 }
