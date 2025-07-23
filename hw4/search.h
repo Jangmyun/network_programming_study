@@ -7,7 +7,7 @@
 
 #define CHAR_SIZE 256
 
-typedef struct {
+typedef struct Node {
   struct Node* children[CHAR_SIZE];
   uint8_t isEndOfWord;
 } Node;

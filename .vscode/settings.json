@@ -11,6 +11,7 @@
     "inet.h": "c",
     "file_info.h": "c",
     "stdlib.h": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "stdarg.h": "c"
   }
 }
