@@ -1,3 +1,5 @@
+#include <ctype.h>
+
 #include "console.h"
 #include "search.h"
 
@@ -6,18 +8,62 @@
 int currentInputLen = 0;
 char inputStr[MAX_INPUT_LEN];
 
+#define ESC 27
+#define BS 8
+#define DEL 127
+
 // Current Cursor Position
 int CURSOR_X, CURSOR_Y;
 
-int main() {
+int main(int argc, char *argv[]) {
+  // if (argc != 3) {
+  //   printf("Usage: %s <port>\n", argv[0]);
+  //   exit(1);
+  // }
+
+  // int sock = 0;
+  // int rw_len;
+  // struct sockaddr_in serv_addr;
+
+  // sock = socket(PF_INET, SOCK_STREAM, 0);
+
+  // memset(&serv_addr, 0, sizeof(serv_addr));
+  // serv_addr.sin_family = AF_INET;
+  // serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+  // serv_addr.sin_port = htons(atoi(argv[2]));
+
   // Get screen size
   int screenWidth = getWindowWidth();
   int screenHeight = getWindowHeight();
 
-  printf("Input > ");
+  CURSOR_X = 13;
+  CURSOR_Y = 1;
 
-  CURSOR_X = 1;
-  CURSOR_Y = screenHeight + 1;
+  clrscr();
+
+  printf("\033[01;33mSearch Word:\033[0m ");
+
+  while (1) {
+    // 키보드 입력 처리
+    if (kbhit()) {
+      int key = getch();
+
+      if (key == ESC) {
+        break;
+      }
+
+      // 입력 문자가 알파벳이나 스페이스일 경우
+      if (isalpha(key) || key == ' ') {
+        inputStr[currentInputLen++] = key;
+        inputStr[currentInputLen] = '\0';
+      }
+      if (key == BS || key == DEL) {
+        inputStr[--currentInputLen] = '\0';
+      }
+    }
+    usleep(10000);
+  }
+  PrintXY(1, 2, "Bye!\n");
 
   return 0;
 }

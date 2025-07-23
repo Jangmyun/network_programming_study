@@ -1,9 +1,12 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #define CHAR_SIZE 256
 
