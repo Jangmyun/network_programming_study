@@ -13,6 +13,8 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
+  int dataLine = countFileLines(dataFile);
+
   fclose(dataFile);
   return 0;
 }

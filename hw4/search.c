@@ -44,3 +44,21 @@ int search(Node* root, const char* suffix) {
   }
   return current->isEndOfWord;
 }
+
+int countFileLines(FILE* fp) {
+  if (fp == NULL) {
+    fprintf(stderr, "fopen() failed\n");
+    return -1;
+  }
+
+  int count;
+
+  char ch;
+  while (!feof(fp)) {
+    ch = fgetc(fp);
+    if (ch == '\n') {
+      count++;
+    }
+  }
+  return count;
+}
