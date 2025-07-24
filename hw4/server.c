@@ -124,8 +124,21 @@ void *keywordHandler(void *arg) {
   FD_CLR(clntInfo.sock, clntInfo.readfds);
   pthread_mutex_unlock(&fdSetMutex);
 
+  int rw_len;
+  size_t wordLen = 0;
+  rw_len = readn(sock, &wordLen, sizeof(size_t));
+
+  char buf[BUF_SIZE];
+  rw_len = readn(sock, buf, wordLen);
+
+  printf("[Client%d] sent %s\n", sock, buf);
+
+  rw_len = writen(sock, buf, wordLen);
+
   pthread_mutex_lock(&fdSetMutex);
   FD_SET(clntInfo.sock, clntInfo.readfds);
   pthread_mutex_unlock(&fdSetMutex);
+
+  free(arg);
   return NULL;
 }
