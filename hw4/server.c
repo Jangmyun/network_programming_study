@@ -88,14 +88,15 @@ int main(int argc, char *argv[]) {
           pthread_mutex_unlock(&fdSetMutex);
 
         } else {  // client socket event
+          printf("client %d event\n", sd);
           ClientInfo *clntInfo = (ClientInfo *)malloc(sizeof(ClientInfo));
           if (clntInfo == NULL) {
             perror("malloc() failed");
-            close(clnt_sock);
+            close(sd);
             continue;
           }
           clntInfo->readfds = &readfds;
-          clntInfo->sock = clnt_sock;
+          clntInfo->sock = sd;
 
           pthread_t tid;
           int ret =
