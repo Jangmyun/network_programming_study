@@ -115,7 +115,7 @@ void *receiveThreadFunc(void *arg) {
   while (1) {
     size_t wordLen = 0;
     readn(sock, &wordLen, sizeof(size_t));
-    readn(sock, buf, sizeof(wordLen));
+    readn(sock, buf, wordLen);
 
     PrintXY(1, 3, buf);
   }
