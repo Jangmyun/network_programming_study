@@ -15,6 +15,8 @@ int main(int argc, char *argv[]) {
 
   int dataLine = countFileLines(dataFile);
 
+  createKeyword(dataFile, dataLine);
+
   fclose(dataFile);
   return 0;
 }

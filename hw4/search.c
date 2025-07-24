@@ -60,5 +60,72 @@ int countFileLines(FILE* fp) {
       count++;
     }
   }
+
+  fseek(fp, 0, SEEK_SET);
   return count;
+}
+
+int countLine(FILE* fp) {
+  if (fp == NULL) {
+    fprintf(stderr, "fopen() failed\n");
+    return -1;
+  }
+  int count = 0;
+
+  char* line = NULL;
+  size_t len = 0;
+  ssize_t read;
+
+  while ((read = getline(&line, &len, fp)) != -1) {
+    printf("%s [%lu]\n", line, strlen(line));
+    count++;
+  }
+
+  fseek(fp, 0, SEEK_SET);
+  free(line);
+  return count;
+}
+
+Keyword* createKeyword(FILE* fp, int lines) {
+  if (fp == NULL) {
+    fprintf(stderr, "fopen() failed\n");
+    return NULL;
+  }
+
+  Keyword* keywords = (Keyword*)malloc(sizeof(Keyword) * lines);
+
+  char* line = NULL;
+  size_t len = 0;
+  ssize_t read;
+
+  int i = 0;
+
+  while ((read = getline(&line, &len, fp)) != -1) {
+    int j = 0;
+    int idxOfLastSpace = 0;
+    // 공백
+    while (line[j] != '\0') {
+      if (line[j] == ' ') {
+        idxOfLastSpace = j;
+      }
+      j++;
+    }
+
+    char* readCountStr = line + idxOfLastSpace + 1;
+    line[idxOfLastSpace] = '\0';
+    char* word = strdup(line);
+
+    keywords[i].word = word;
+    keywords[i].wordLength = strlen(line) + 1;
+    keywords[i].searchCount = atoi(readCountStr);
+
+    // test
+    printf("[%d]%s,%d\n", keywords[i].searchCount, keywords[i].word,
+           keywords[i].wordLength);
+
+    i++;
+  }
+
+  fseek(fp, 0, SEEK_SET);
+  return keywords;
 }

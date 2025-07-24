@@ -17,18 +17,20 @@ typedef struct Node {
 } Node;
 
 typedef struct {
-  char* searchWord;
+  char* word;
   Node* trieRoot;
-  int word_length;
+  int wordLength;
+  int searchCount;
 } Keyword;
 
 Node* createNode();
 void insert(Node* root, const char* suffix);
+void insertSuffix(Node* root, const char* suffix);
 void display(Node* root, char str[], int level);
 int search(Node* root, const char* suffix);
 
 int countFileLines(FILE* fp);
 
-Keyword* readFromFile(FILE* fp, int lines);
+Keyword* createKeyword(FILE* fp, int lines);
 
 #endif
