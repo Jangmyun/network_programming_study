@@ -25,11 +25,12 @@ int main(int argc, char *argv[]) {
   int dataLine = countFileLines(dataFile);
 
   Keyword *keywords = createKeyword(dataFile, dataLine);
-  puts("Data Ready!");
 
 #ifdef DEBUG
   printKeywords(keywords, dataLine);
 #endif
+
+  puts("Data Ready!");
 
   int serv_sock, clnt_sock;
   struct sockaddr_in serv_addr, clnt_addr;
