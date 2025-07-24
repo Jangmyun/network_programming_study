@@ -99,6 +99,10 @@ int main(int argc, char *argv[]) {
           clntInfo->readfds = &readfds;
           clntInfo->sock = sd;
 
+          pthread_mutex_lock(&fdSetMutex);
+          FD_CLR(sd, &readfds);
+          pthread_mutex_unlock(&fdSetMutex);
+
           pthread_t tid;
           int ret =
               pthread_create(&tid, NULL, keywordHandler, (void *)clntInfo);
@@ -121,10 +125,6 @@ int main(int argc, char *argv[]) {
 void *keywordHandler(void *arg) {
   ClientInfo clntInfo = *(ClientInfo *)arg;
   int sock = clntInfo.sock;
-
-  pthread_mutex_lock(&fdSetMutex);
-  FD_CLR(clntInfo.sock, clntInfo.readfds);
-  pthread_mutex_unlock(&fdSetMutex);
 
   int rw_len;
   size_t wordLen = 0;
