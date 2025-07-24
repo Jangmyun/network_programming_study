@@ -119,6 +119,9 @@ void *receiveThreadFunc(void *arg) {
     readn(sock, buf, wordLen);
 
     PrintXY(1, 3, buf);
+    LockDisplay();
+    gotoxy(INPUT_START_POS + currentInputLen, 1);
+    UnlockDisplay();
   }
 
   return NULL;
