@@ -1,6 +1,15 @@
 #include "console.h"
 #include "search.h"
 
+typedef struct {
+  int sock;
+  fd_set *readfds;
+} ClientInfo;
+
+void *keywordHandler(void *arg);
+
+pthread_mutex_t fdSetMutex = PTHREAD_MUTEX_INITIALIZER;
+
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     printf("Usage: %s <port> <datafile>\n", argv[0]);
@@ -58,6 +67,65 @@ int main(int argc, char *argv[]) {
 
   puts("Server On!");
 
+  while (1) {
+    tempReads = readfds;
+
+    fd_num = select(fd_max + 1, &tempReads, 0, 0, NULL);
+    if (fd_num == -1) break;
+    if (fd_num == 0) continue;
+
+    for (int sd = 0; sd <= fd_max; sd++) {
+      if (FD_ISSET(sd, &readfds)) {  // readfds event
+        if (sd == serv_sock) {       // server socket event
+          addr_size = sizeof(clnt_addr);
+          clnt_sock =
+              accept(serv_sock, (struct sockaddr *)&clnt_addr, &addr_size);
+          if (fd_max < clnt_sock) fd_max = clnt_sock;
+          printf("Client %d accepted\n", clnt_sock);
+
+          pthread_mutex_lock(&fdSetMutex);
+          FD_SET(clnt_sock, &readfds);
+          pthread_mutex_unlock(&fdSetMutex);
+
+        } else {  // client socket event
+          ClientInfo *clntInfo = (ClientInfo *)malloc(sizeof(ClientInfo));
+          if (clntInfo == NULL) {
+            perror("malloc() failed");
+            close(clnt_sock);
+            continue;
+          }
+          clntInfo->readfds = &readfds;
+          clntInfo->sock = clnt_sock;
+
+          pthread_t tid;
+          int ret =
+              pthread_create(&tid, NULL, keywordHandler, (void *)clntInfo);
+          if (ret != 0) {
+            fprintf(stderr, "pthread_create() failed %s\n", strerror(ret));
+            close(clnt_sock);
+            continue;
+          }
+
+          pthread_detach(tid);
+        }
+      }
+    }
+  }
+
   fclose(dataFile);
   return 0;
+}
+
+void *keywordHandler(void *arg) {
+  ClientInfo clntInfo = *(ClientInfo *)arg;
+  int sock = clntInfo.sock;
+
+  pthread_mutex_lock(&fdSetMutex);
+  FD_CLR(clntInfo.sock, clntInfo.readfds);
+  pthread_mutex_unlock(&fdSetMutex);
+
+  pthread_mutex_lock(&fdSetMutex);
+  FD_SET(clntInfo.sock, clntInfo.readfds);
+  pthread_mutex_unlock(&fdSetMutex);
+  return NULL;
 }
