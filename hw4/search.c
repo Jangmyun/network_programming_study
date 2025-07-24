@@ -29,6 +29,7 @@ void insertSuffix(Node* root, const char* suffix) {
       if (current->children[idx] == NULL) {
         current->children[idx] = createNode();
       }
+      current = current->children[idx];
     }
     current->isEndOfWord = 1;
   }
@@ -41,7 +42,7 @@ void display(Node* root, char str[], int level) {
   }
   for (int i = 0; i < CHAR_SIZE; i++) {
     if (root->children[i] != NULL) {
-      str[level] = i + 'a';
+      str[level] = i;
       display(root->children[i], str, level + 1);
     }
   }
@@ -56,7 +57,7 @@ int search(Node* root, const char* suffix) {
     }
     current = current->children[idx];
   }
-  return current->isEndOfWord;
+  return 1;
 }
 
 int countFileLines(FILE* fp) {
@@ -107,6 +108,10 @@ Keyword* createKeyword(FILE* fp, int lines) {
   }
 
   Keyword* keywords = (Keyword*)malloc(sizeof(Keyword) * lines);
+  if (keywords == NULL) {
+    perror("malloc() failed");
+    return NULL;
+  }
 
   char* line = NULL;
   size_t len = 0;
@@ -133,13 +138,19 @@ Keyword* createKeyword(FILE* fp, int lines) {
     keywords[i].wordLength = strlen(line) + 1;
     keywords[i].searchCount = atoi(readCountStr);
 
-    // test
-    printf("[%d]%s,%d\n", keywords[i].searchCount, keywords[i].word,
-           keywords[i].wordLength);
+    keywords[i].trieRoot = createNode();
+    insertSuffix(keywords[i].trieRoot, keywords[i].word);
 
     i++;
   }
 
   fseek(fp, 0, SEEK_SET);
   return keywords;
+}
+
+void printKeywords(Keyword* keywords, int n) {
+  for (int i = 0; i < n; i++) {
+    printf("[%d]%s,%d,isPohang=%d\n", keywords[i].searchCount, keywords[i].word,
+           keywords[i].wordLength, search(keywords[i].trieRoot, "Pohang"));
+  }
 }

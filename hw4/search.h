@@ -33,4 +33,6 @@ int countFileLines(FILE* fp);
 
 Keyword* createKeyword(FILE* fp, int lines);
 
+void printKeywords(Keyword* keywords, int n);
+
 #endif

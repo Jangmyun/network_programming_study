@@ -15,7 +15,11 @@ int main(int argc, char *argv[]) {
 
   int dataLine = countFileLines(dataFile);
 
-  createKeyword(dataFile, dataLine);
+  Keyword *keywords = createKeyword(dataFile, dataLine);
+
+#ifdef DEBUG
+  printKeywords(keywords, dataLine);
+#endif
 
   fclose(dataFile);
   return 0;
