@@ -35,4 +35,7 @@ Keyword* createKeyword(FILE* fp, int lines);
 
 void printKeywords(Keyword* keywords, int n);
 
+ssize_t readn(int fd, void* data, size_t n);
+ssize_t writen(int fd, const void* data, size_t n);
+
 #endif
