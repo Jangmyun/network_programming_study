@@ -196,3 +196,8 @@ ssize_t writen(int fd, const void* data, size_t n) {
 
   return n - left;
 }
+
+void errorExit(const char* err) {
+  perror(err);
+  exit(1);
+}
