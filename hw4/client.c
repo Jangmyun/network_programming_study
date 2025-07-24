@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
 
       // 입력이 있는 상태라면 word를 서버에 전송
       if (currentInputLen > 0) {
+        PrintXY(1, 2, "%s sent", inputStr);
         sendWord(sock);
       }
     }
