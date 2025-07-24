@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 void sendWord(int sock) {
   size_t wordLen = currentInputLen;
   writen(sock, &wordLen, sizeof(size_t));
-  writen(sock, inputStr, currentInputLen + 1);
+  writen(sock, inputStr, currentInputLen);
 }
 
 void *receiveThreadFunc(void *arg) {

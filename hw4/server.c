@@ -130,8 +130,17 @@ void *keywordHandler(void *arg) {
   size_t wordLen = 0;
   rw_len = readn(sock, &wordLen, sizeof(size_t));
 
+#ifdef DEBUG
+  printf("wordLen=%zu, rw_len=%d", wordLen, rw_len);
+#endif
+
   char buf[BUF_SIZE];
   rw_len = readn(sock, buf, wordLen);
+  buf[wordLen] = '\0';
+
+#ifdef DEBUG
+  printf("rw_len=%d, buf=%s", rw_len, buf);
+#endif
 
   printf("[Client%d] sent %s\n", sock, buf);
 
