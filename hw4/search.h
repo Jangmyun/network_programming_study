@@ -40,4 +40,6 @@ ssize_t writen(int fd, const void* data, size_t n);
 
 void errorExit(const char* err);
 
+int findMatchedWords(char* word, Keyword* keywords, int n, Keyword* matchedBuf);
+
 #endif

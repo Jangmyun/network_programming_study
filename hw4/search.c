@@ -202,3 +202,24 @@ void errorExit(const char* err) {
   perror(err);
   exit(1);
 }
+
+/*
+  word: 검색어
+  keywords: 키워드 배열
+  n: 키워드 배열의 길이
+  matchedBuf: 매치된 Keyword 객체 배열을 담을 Keyword* 버퍼
+
+  return: 매치된 키워드의 개수
+*/
+int findMatchedWords(char* word, Keyword* keywords, int n,
+                     Keyword* matchedBuf) {
+  int matchedCount = 0;
+
+  for (int i = 0; i < n; i++) {
+    if (search(keywords[i].trieRoot, word)) {
+      matchedBuf[matchedCount++] = keywords[i];
+    }
+  }
+
+  return matchedCount;
+}
