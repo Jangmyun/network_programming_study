@@ -22,6 +22,42 @@ int main(int argc, char *argv[]) {
   printKeywords(keywords, dataLine);
 #endif
 
+  int serv_sock, clnt_sock;
+  struct sockaddr_in serv_addr, clnt_addr;
+
+  socklen_t addr_size = sizeof(struct sockaddr_in);
+
+  int fd_max, fd_num;
+  int rw_len;
+  char buf[BUF_SIZE];
+
+  serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+  int optval = 1;
+  if (setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
+                 sizeof(optval))) {
+    errorExit("setsockopt() error");
+  }
+
+  memset(&serv_addr, 0, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  serv_addr.sin_port = htons(atoi(argv[1]));
+
+  if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+    errorExit("bind() error");
+  }
+
+  if (listen(serv_sock, 5) == -1) {
+    errorExit("listen() error");
+  }
+
+  fd_set readfds, tempReads;
+
+  FD_ZERO(&readfds);
+  FD_SET(serv_sock, &readfds);
+
+  puts("Server On!");
+
   fclose(dataFile);
   return 0;
 }
