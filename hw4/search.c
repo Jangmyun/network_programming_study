@@ -16,6 +16,7 @@ void insert(Node* root, const char* suffix) {
     if (current->children[idx] == NULL) {
       current->children[idx] = createNode();
     }
+    current = current->children[idx];
   }
   current->isEndOfWord = 1;
 }
