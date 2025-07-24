@@ -122,7 +122,7 @@ Keyword* createKeyword(FILE* fp, int lines) {
 
   while ((read = getline(&line, &len, fp)) != -1) {
     int j = 0;
-    int idxOfLastSpace = 0;
+    int idxOfLastSpace = -1;
     // 공백
     while (line[j] != '\0') {
       if (line[j] == ' ') {
