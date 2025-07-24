@@ -13,5 +13,6 @@
     "stdlib.h": "c",
     "types.h": "c",
     "stdarg.h": "c"
-  }
+  },
+  "cSpell.words": ["gotoxy", "mesg", "oldf", "oldt", "readn"]
 }
