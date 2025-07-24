@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
   int dataLine = countFileLines(dataFile);
 
   Keyword *keywords = createKeyword(dataFile, dataLine);
+  puts("Data Ready!");
 
 #ifdef DEBUG
   printKeywords(keywords, dataLine);
