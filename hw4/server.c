@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
 
   FD_ZERO(&readfds);
   FD_SET(serv_sock, &readfds);
+  fd_max = serv_sock;
 
   puts("Server On!");
 
