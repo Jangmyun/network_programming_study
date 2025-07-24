@@ -20,6 +20,20 @@ void insert(Node* root, const char* suffix) {
   current->isEndOfWord = 1;
 }
 
+void insertSuffix(Node* root, const char* suffix) {
+  int len = strlen(suffix);
+  for (int i = 0; i < len; ++i) {
+    Node* current = root;
+    for (int j = i; suffix[j] != '\0'; j++) {
+      int idx = suffix[j];
+      if (current->children[idx] == NULL) {
+        current->children[idx] = createNode();
+      }
+    }
+    current->isEndOfWord = 1;
+  }
+}
+
 void display(Node* root, char str[], int level) {
   if (root->isEndOfWord) {
     str[level] = '\0';
