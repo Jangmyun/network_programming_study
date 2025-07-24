@@ -133,6 +133,7 @@ void *keywordHandler(void *arg) {
 
   printf("[Client%d] sent %s\n", sock, buf);
 
+  rw_len = writen(sock, &wordLen, sizeof(size_t));
   rw_len = writen(sock, buf, wordLen);
 
   pthread_mutex_lock(&fdSetMutex);

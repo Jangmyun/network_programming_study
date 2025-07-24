@@ -20,6 +20,8 @@ int CURSOR_X, CURSOR_Y;
 void refreshInput();
 void showSearchResult();
 void getSearchResult();
+void *receiveThreadFunc(void *arg);
+void sendWord(int sock);
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -45,11 +47,22 @@ int main(int argc, char *argv[]) {
   CURSOR_X = INPUT_START_POS;
   CURSOR_Y = 1;
 
+  if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+    errorExit("connect() error");
+  }
+
   clrscr();
 
   printf("\033[01;33mSearch Word:\033[0m ");
 
   gotoxy(CURSOR_X, CURSOR_Y);
+
+  pthread_t tid;
+  int ret = pthread_create(&tid, NULL, receiveThreadFunc, (void *)&sock);
+  if (ret != 0) {
+    fprintf(stderr, "pthread_create() failed %s\n", strerror(ret));
+    close(sock);
+  }
 
   while (1) {
     // 키보드 입력 처리
@@ -75,12 +88,39 @@ int main(int argc, char *argv[]) {
           refreshInput();
         }
       }
+
+      // 입력이 있는 상태라면 word를 서버에 전송
+      if (currentInputLen > 0) {
+        sendWord(sock);
+      }
     }
     usleep(10000);
   }
   PrintXY(1, 2, "Bye!\n");
 
   return 0;
+}
+
+void sendWord(int sock) {
+  size_t wordLen = currentInputLen;
+  writen(sock, &wordLen, sizeof(size_t));
+  writen(sock, inputStr, currentInputLen + 1);
+}
+
+void *receiveThreadFunc(void *arg) {
+  int sock = *(int *)arg;
+
+  char buf[BUF_SIZE];
+
+  while (1) {
+    size_t wordLen = 0;
+    readn(sock, &wordLen, sizeof(size_t));
+    readn(sock, buf, sizeof(wordLen));
+
+    PrintXY(1, 3, buf);
+  }
+
+  return NULL;
 }
 
 void refreshInput() {
@@ -93,10 +133,3 @@ void refreshInput() {
   fflush(stdout);
   pthread_mutex_unlock(&display_mutex);
 }
-
-void getSearchResult() {
-  int rw_len = 0;
-  return;
-}
-
-void showSearchResult();
