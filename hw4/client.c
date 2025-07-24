@@ -18,23 +18,25 @@ char inputStr[MAX_INPUT_LEN];
 int CURSOR_X, CURSOR_Y;
 
 void refreshInput();
+void showSearchResult();
+void getSearchResult();
 
 int main(int argc, char *argv[]) {
-  // if (argc != 3) {
-  //   printf("Usage: %s <port>\n", argv[0]);
-  //   exit(1);
-  // }
+  if (argc != 3) {
+    printf("Usage: %s <port>\n", argv[0]);
+    exit(1);
+  }
 
-  // int sock = 0;
-  // int rw_len;
-  // struct sockaddr_in serv_addr;
+  int sock = 0;
+  int rw_len;
+  struct sockaddr_in serv_addr;
 
-  // sock = socket(PF_INET, SOCK_STREAM, 0);
+  sock = socket(PF_INET, SOCK_STREAM, 0);
 
-  // memset(&serv_addr, 0, sizeof(serv_addr));
-  // serv_addr.sin_family = AF_INET;
-  // serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
-  // serv_addr.sin_port = htons(atoi(argv[2]));
+  memset(&serv_addr, 0, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+  serv_addr.sin_port = htons(atoi(argv[2]));
 
   // Get screen size
   int screenWidth = getWindowWidth();
@@ -66,6 +68,7 @@ int main(int argc, char *argv[]) {
           refreshInput();
         }
       }
+      // backspace(^H) 인 경우
       if (key == BS) {
         if (currentInputLen > 0) {
           inputStr[--currentInputLen] = '\0';
@@ -90,3 +93,10 @@ void refreshInput() {
   fflush(stdout);
   pthread_mutex_unlock(&display_mutex);
 }
+
+void getSearchResult() {
+  int rw_len = 0;
+  return;
+}
+
+void showSearchResult();
