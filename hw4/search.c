@@ -67,7 +67,7 @@ int countFileLines(FILE* fp) {
     return -1;
   }
 
-  int count;
+  int count = 0;
 
   char ch;
   while (!feof(fp)) {
