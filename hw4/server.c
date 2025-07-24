@@ -69,16 +69,20 @@ int main(int argc, char *argv[]) {
 
   puts("Server On!");
 
+  struct timeval timeout;
+  const struct timeval TIMEOUT = {0, 0};
+
   while (1) {
     tempReads = readfds;
+    timeout = TIMEOUT;
 
-    fd_num = select(fd_max + 1, &tempReads, 0, 0, NULL);
+    fd_num = select(fd_max + 1, &tempReads, 0, 0, &timeout);
     if (fd_num == -1) break;
     if (fd_num == 0) continue;
 
     for (int sd = 0; sd <= fd_max; sd++) {
-      if (FD_ISSET(sd, &readfds)) {  // readfds event
-        if (sd == serv_sock) {       // server socket event
+      if (FD_ISSET(sd, &tempReads)) {  // readfds event
+        if (sd == serv_sock) {         // server socket event
           addr_size = sizeof(clnt_addr);
           clnt_sock =
               accept(serv_sock, (struct sockaddr *)&clnt_addr, &addr_size);
