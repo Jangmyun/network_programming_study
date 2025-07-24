@@ -4,6 +4,8 @@
 typedef struct {
   int sock;
   fd_set *readfds;
+  Keyword *keywords;
+  int keywordCount;
 } ClientInfo;
 
 void *keywordHandler(void *arg);
@@ -22,12 +24,12 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  int dataLine = countFileLines(dataFile);
+  int dataCount = countFileLines(dataFile);
 
-  Keyword *keywords = createKeyword(dataFile, dataLine);
+  Keyword *keywords = createKeyword(dataFile, dataCount);
 
 #ifdef DEBUG
-  printKeywords(keywords, dataLine);
+  printKeywords(keywords, dataCount);
 #endif
 
   puts("Data Ready!");
@@ -103,6 +105,8 @@ int main(int argc, char *argv[]) {
           }
           clntInfo->readfds = &readfds;
           clntInfo->sock = sd;
+          clntInfo->keywordCount = dataCount;
+          clntInfo->keywords = keywords;
 
           pthread_mutex_lock(&fdSetMutex);
           FD_CLR(sd, &readfds);
@@ -131,6 +135,9 @@ void *keywordHandler(void *arg) {
   ClientInfo clntInfo = *(ClientInfo *)arg;
   int sock = clntInfo.sock;
 
+  Keyword *matchedKeywords =
+      (Keyword *)malloc(sizeof(Keyword) * clntInfo.keywordCount);
+
   int rw_len;
   size_t wordLen = 0;
   rw_len = readn(sock, &wordLen, sizeof(size_t));
@@ -144,13 +151,27 @@ void *keywordHandler(void *arg) {
   buf[wordLen] = '\0';
 
 #ifdef DEBUG
-  printf("rw_len=%d, buf=%s", rw_len, buf);
+  printf("client=%d, rw_len=%d, buf=%s", sock, rw_len, buf);
 #endif
 
-  printf("[Client%d] sent %s\n", sock, buf);
+  int matchedCount = findMatchedWords(buf, clntInfo.keywords,
+                                      clntInfo.keywordCount, matchedKeywords);
 
-  rw_len = writen(sock, &wordLen, sizeof(size_t));
-  rw_len = writen(sock, buf, wordLen);
+  // 매칭된 keywords의 개수 송신
+  rw_len = writen(sock, &matchedCount, sizeof(int));
+
+  // 송신한 keywords 개수만큼 word의 길이와 word와 searchCount 전송
+  for (int i = 0; i < matchedCount; i++) {
+    rw_len = writen(sock, &matchedKeywords[i].wordLength, sizeof(int));
+    rw_len =
+        writen(sock, matchedKeywords[i].word, matchedKeywords[i].wordLength);
+    rw_len = writen(sock, &matchedKeywords[i].searchCount, sizeof(int));
+
+#ifdef DEBUG
+    printf("[%d] %s %d\n", i, matchedKeywords[i].word,
+           matchedKeywords[i].wordLength);
+#endif
+  }
 
   pthread_mutex_lock(&fdSetMutex);
   FD_SET(clntInfo.sock, clntInfo.readfds);

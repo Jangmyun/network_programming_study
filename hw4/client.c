@@ -19,9 +19,10 @@ int CURSOR_X, CURSOR_Y;
 
 void refreshInput();
 void showSearchResult();
-void getSearchResult();
+
 void *receiveThreadFunc(void *arg);
 void sendWord(int sock);
+void recvMatchedWords(int sock, int matchedCount, Keyword keywords[]);
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -114,9 +115,12 @@ void *receiveThreadFunc(void *arg) {
   char buf[BUF_SIZE];
 
   while (1) {
-    size_t wordLen = 0;
-    readn(sock, &wordLen, sizeof(size_t));
-    readn(sock, buf, wordLen);
+    int matchedCount = 0;
+    readn(sock, &matchedCount, sizeof(int));
+
+    Keyword matchedKeywords[matchedCount];
+
+    recvMatchedWords(sock, matchedCount, matchedKeywords);
 
     PrintXY(1, 3, buf);
     LockDisplay();
@@ -125,6 +129,34 @@ void *receiveThreadFunc(void *arg) {
   }
 
   return NULL;
+}
+
+void recvMatchedWords(int sock, int matchedCount, Keyword matchedKeywords[]) {
+  int rw_len;
+
+  // 매칭된 keywords의 개수 수신
+  rw_len = readn(sock, &matchedCount, sizeof(int));
+
+  // 수신한 keywords 개수만큼 word의 길이와 word와 searchCount 수신
+  int wordLen = 0;
+  int searchCount = 0;
+  for (int i = 0; i < matchedCount; i++) {
+    // word 길이 수신
+    rw_len = readn(sock, &wordLen, sizeof(int));
+    matchedKeywords[i].wordLength = wordLen;
+    // word 길이만큼 word 수신
+    char *word = (char *)malloc(sizeof(char) * wordLen);
+    rw_len = readn(sock, word, wordLen);
+    matchedKeywords[i].word = word;
+    // searchCount 수신
+    rw_len = readn(sock, &searchCount, sizeof(int));
+    matchedKeywords[i].searchCount = searchCount;
+
+#ifdef DEBUG
+    printf("[%d] %s, %d", matchedKeywords[i].searchCount,
+           matchedKeywords[i].word, matchedKeywords[i].wordLength);
+#endif
+  }
 }
 
 void refreshInput() {
