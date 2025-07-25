@@ -143,7 +143,7 @@ void *keywordHandler(void *arg) {
   rw_len = readn(sock, &wordLen, sizeof(size_t));
 
 #ifdef DEBUG
-  printf("wordLen=%zu, rw_len=%d", wordLen, rw_len);
+  printf("wordLen=%zu, rw_len=%d\n", wordLen, rw_len);
 #endif
 
   char buf[BUF_SIZE];
@@ -151,7 +151,7 @@ void *keywordHandler(void *arg) {
   buf[wordLen] = '\0';
 
 #ifdef DEBUG
-  printf("client=%d, rw_len=%d, buf=%s", sock, rw_len, buf);
+  printf("client=%d, rw_len=%d, buf=%s\n", sock, rw_len, buf);
 #endif
 
   int matchedCount = findMatchedWords(buf, clntInfo.keywords,

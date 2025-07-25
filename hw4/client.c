@@ -22,7 +22,9 @@ void showSearchResult();
 
 void *receiveThreadFunc(void *arg);
 void sendWord(int sock);
-void recvMatchedWords(int sock, int matchedCount, Keyword keywords[]);
+void recvMatchedWords(int sock, int matchedCount, Keyword matchedKeywords[]);
+void printMatchedWords(int matchedCount, Keyword keywords[]);
+void sortMatchedWords(int matchedCount, Keyword Keywords[]);
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -118,11 +120,16 @@ void *receiveThreadFunc(void *arg) {
     int matchedCount = 0;
     readn(sock, &matchedCount, sizeof(int));
 
+#ifdef DEBUG
+    PrintXY(1, 3, "%d", matchedCount);
+#endif
+
     Keyword matchedKeywords[matchedCount];
 
     recvMatchedWords(sock, matchedCount, matchedKeywords);
 
-    PrintXY(1, 3, buf);
+    printMatchedWords(matchedCount, matchedKeywords);
+
     LockDisplay();
     gotoxy(INPUT_START_POS + currentInputLen, 1);
     UnlockDisplay();
@@ -133,9 +140,6 @@ void *receiveThreadFunc(void *arg) {
 
 void recvMatchedWords(int sock, int matchedCount, Keyword matchedKeywords[]) {
   int rw_len;
-
-  // 매칭된 keywords의 개수 수신
-  rw_len = readn(sock, &matchedCount, sizeof(int));
 
   // 수신한 keywords 개수만큼 word의 길이와 word와 searchCount 수신
   int wordLen = 0;
@@ -168,4 +172,24 @@ void refreshInput() {
 
   fflush(stdout);
   pthread_mutex_unlock(&display_mutex);
+}
+
+void printMatchedWords(int matchedCount, Keyword keywords[]) {
+  const int Y_OFFSET = 3;
+
+  pthread_mutex_lock(&display_mutex);
+  gotoxy(1, Y_OFFSET);
+  printf("\033[0J");
+  pthread_mutex_unlock(&display_mutex);
+
+  for (int i = 0; i < matchedCount; i++) {
+    pthread_mutex_lock(&display_mutex);
+
+    gotoxy(1, Y_OFFSET + i);
+    printf("\033[K");
+
+    pthread_mutex_unlock(&display_mutex);
+
+    PrintXY(1, Y_OFFSET + i, "%s", keywords[i].word);
+  }
 }
