@@ -13,6 +13,7 @@ char inputStr[MAX_INPUT_LEN];
 #define DEL 127
 
 #define INPUT_START_POS 14
+#define Y_OFFSET 3
 
 // Current Cursor Position
 int CURSOR_X, CURSOR_Y;
@@ -24,6 +25,7 @@ void sendWord(int sock);
 void recvMatchedWords(int sock, int matchedCount, Keyword matchedKeywords[]);
 void printMatchedWords(int matchedCount, Keyword keywords[]);
 void sortMatchedWords(int matchedCount, Keyword Keywords[]);
+void printHighlightedResult(int idx, char *resultWord);
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -93,7 +95,9 @@ int main(int argc, char *argv[]) {
 
       // 입력이 있는 상태라면 word를 서버에 전송
       if (currentInputLen > 0) {
+#ifdef DEBUG
         PrintXY(1, 2, "%s sent", inputStr);
+#endif
         sendWord(sock);
       }
     }
@@ -176,8 +180,7 @@ void refreshInput() {
 }
 
 void printMatchedWords(int matchedCount, Keyword keywords[]) {
-  const int Y_OFFSET = 3;
-
+  // 10개만 프린트
   int printTime = matchedCount > 10 ? 10 : matchedCount;
 
   pthread_mutex_lock(&display_mutex);
@@ -193,7 +196,7 @@ void printMatchedWords(int matchedCount, Keyword keywords[]) {
 
     pthread_mutex_unlock(&display_mutex);
 
-    PrintXY(1, Y_OFFSET + i, "%s", keywords[i].word);
+    printHighlightedResult(i, keywords[i].word);
   }
 }
 
@@ -208,4 +211,23 @@ void sortMatchedWords(int matchedCount, Keyword keywords[]) {
     }
     keywords[j + 1] = key;
   }
+}
+
+void printHighlightedResult(int idx, char *resultWord) {
+  char *matchPtr = strstr(resultWord, inputStr);
+
+  int wordLen = strlen(resultWord);
+  int matchedIdx = matchPtr - resultWord + 1;
+
+  PrintXY(1, idx + Y_OFFSET, resultWord);
+
+  pthread_mutex_lock(&display_mutex);
+  printf("\033[33m");
+  pthread_mutex_unlock(&display_mutex);
+
+  PrintXY(matchedIdx, idx + Y_OFFSET, inputStr);
+
+  pthread_mutex_lock(&display_mutex);
+  printf("\033[0m");
+  pthread_mutex_unlock(&display_mutex);
 }
