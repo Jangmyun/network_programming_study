@@ -18,7 +18,6 @@ char inputStr[MAX_INPUT_LEN];
 int CURSOR_X, CURSOR_Y;
 
 void refreshInput();
-void showSearchResult();
 
 void *receiveThreadFunc(void *arg);
 void sendWord(int sock);
@@ -128,6 +127,8 @@ void *receiveThreadFunc(void *arg) {
 
     recvMatchedWords(sock, matchedCount, matchedKeywords);
 
+    sortMatchedWords(matchedCount, matchedKeywords);
+
     printMatchedWords(matchedCount, matchedKeywords);
 
     LockDisplay();
@@ -177,12 +178,14 @@ void refreshInput() {
 void printMatchedWords(int matchedCount, Keyword keywords[]) {
   const int Y_OFFSET = 3;
 
+  int printTime = matchedCount > 10 ? 10 : matchedCount;
+
   pthread_mutex_lock(&display_mutex);
   gotoxy(1, Y_OFFSET);
   printf("\033[0J");
   pthread_mutex_unlock(&display_mutex);
 
-  for (int i = 0; i < matchedCount; i++) {
+  for (int i = 0; i < printTime; i++) {
     pthread_mutex_lock(&display_mutex);
 
     gotoxy(1, Y_OFFSET + i);
@@ -191,5 +194,18 @@ void printMatchedWords(int matchedCount, Keyword keywords[]) {
     pthread_mutex_unlock(&display_mutex);
 
     PrintXY(1, Y_OFFSET + i, "%s", keywords[i].word);
+  }
+}
+
+void sortMatchedWords(int matchedCount, Keyword keywords[]) {
+  int i, j;
+  Keyword key;
+
+  for (i = 1; i < matchedCount; i++) {
+    key = keywords[i];
+    for (j = i - 1; j >= 0 && keywords[j].searchCount < key.searchCount; j--) {
+      keywords[j + 1] = keywords[j];
+    }
+    keywords[j + 1] = key;
   }
 }
