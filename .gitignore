@@ -4,3 +4,5 @@ self/endian_conv
 *.JPG
 *.png
 *.pdf
+
+example.c
