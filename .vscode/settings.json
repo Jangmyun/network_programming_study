@@ -14,5 +14,21 @@
     "types.h": "c",
     "stdarg.h": "c"
   },
-  "cSpell.words": ["gotoxy", "mesg", "oldf", "oldt", "readn"]
+  "cSpell.words": [
+    "Bulguksa",
+    "Busan",
+    "Gamcheon",
+    "gotoxy",
+    "Gyeongju",
+    "Haeundae",
+    "Hallasan",
+    "Hareubang",
+    "Jeju",
+    "mesg",
+    "Namsan",
+    "oldf",
+    "oldt",
+    "readn",
+    "Seokguram"
+  ]
 }
