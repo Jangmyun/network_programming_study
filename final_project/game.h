@@ -6,9 +6,23 @@
 typedef long board_mask;
 #define BOARD_BITS (8 * sizeof(board_mask))
 
+typedef unsigned short u_int16_t;
+typedef u_int16_t board_pos;
+
+/* =====CLIENT===== */
+#define GRID_START_POS 7
+#define BLANK_PER_GRID 2  // 하나의 GRID를 공백 두개로 표현
+
+#define COLOR_BLANK "\033[100m"
+#define COLOR_PLAYER "\033[47m"
+#define COLOR_RED_TEAM "\033[101m"
+#define COLOR_BLUE_TEAM "\033[104m"
+
+#include <string.h>
+#include <sys/time.h>
 #include <sys/types.h>
 
-// 보드 위치 표현을 위한 1024 비트열
+// 1024 bit array structure for board positions
 typedef struct {
   board_mask board_bits[MAX_BOARD / BOARD_BITS];
 } board_bitarray;
@@ -19,7 +33,27 @@ typedef struct _GameInitInfo {
   u_int8_t playerId;     // 서버가 클라이언트에게 부여한 고유 번호 (접속 순서)
   u_int8_t gridSize;     // 한 변의 크기
   u_int16_t boardCount;  // 전체 판 개수
-  u_int16_t boardPosition[];
+  board_pos *boardPositions;
+  struct timeval gameTime;
 } GameInitInfo;
 
+/* =====COMMON===== */
+
+// GameIninInfo setter
+void setGameInitInfo(GameInitInfo *gameInfo, u_int8_t playerCount,
+                     u_int8_t playerId, u_int8_t gridSize, u_int16_t boardCount,
+                     board_pos *boardPosition, struct timeval gameTime);
+
+/* =====CLIENT===== */
+
+void setColor(char *color);
+void clearColor();
+void drawGrid(int gridSize);
+
+/* =====SERVER===== */
+
+// Grid안에서 판의 위치 랜덤 생성
+board_pos *generateBoardPosition(GameInitInfo *gameInitInfo);
+
+void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount);
 #endif
