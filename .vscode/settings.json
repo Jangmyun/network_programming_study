@@ -12,7 +12,10 @@
     "file_info.h": "c",
     "stdlib.h": "c",
     "types.h": "c",
-    "stdarg.h": "c"
+    "stdarg.h": "c",
+    "console.h": "c",
+    "unistd.h": "c",
+    "stdint.h": "c"
   },
   "cSpell.words": [
     "Bulguksa",
