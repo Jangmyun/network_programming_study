@@ -6,6 +6,7 @@
 u_int16_t *boardPositions = NULL;
 u_int16_t boardCount = 200;
 GameInitInfo gameInitInfo;
+board_bitarray board_status;
 
 int window_x;
 int window_y;
@@ -16,6 +17,7 @@ int main(int arc, char *argv[]) {
   struct timeval gameTime = {60, 0};
   setGameInitInfo(&gameInitInfo, 2, 1, 32, 200, boardPositions, gameTime);
   boardPositions = generateBoardPosition(&gameInitInfo);
+  randomizeBoardColor(&board_status, boardCount);
 
   window_x = getWindowWidth();
   window_y = getWindowHeight();

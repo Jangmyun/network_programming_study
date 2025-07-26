@@ -4,6 +4,7 @@
 board_pos *boardPositions = NULL;
 u_int16_t boardCount = 200;
 GameInitInfo gameInitInfo;
+board_bitarray board_status;
 
 int main(int arc, char *argv[]) {
   struct timeval gameTime = {60, 0};
@@ -19,6 +20,16 @@ int main(int arc, char *argv[]) {
 #ifdef DEBUG
   puts("Random Board Positions Generated");
   printBoardPositions(boardPositions, gameInitInfo.boardCount);
+  puts("");
+#endif
+
+  // board color randomization
+  randomizeBoardColor(&board_status, boardCount);
+
+#ifdef DEBUG
+  puts("Random Board Color Selected");
+  printfBoardStatus(&board_status, boardCount);
+  puts("");
 #endif
 
   free(boardPositions);
