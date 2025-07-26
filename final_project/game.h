@@ -34,6 +34,14 @@ typedef struct {
   board_mask board_bits[MAX_BOARD / BOARD_BITS];
 } board_bitarray;
 
+// 비트 연산 매크로
+#define BIT_SET(bitarray, pos) \
+  ((bitarray).board_bits[(pos) / BOARD_BITS] |= (1L << (pos % BOARD_BITS)))
+#define BIT_CLR(bitarray, pos) \
+  ((bitarray).board_bits[(pos) / BOARD_BITS] &= ~(1L << (pos % BOARD_BITS)))
+#define BIT_ISSET(bitarray, pos) \
+  ((bitarray).board_bits[(pos) / BOARD_BITS] & (1L << (pos % BOARD_BITS)))
+
 typedef struct {
   u_int8_t x;
   u_int8_t y;
