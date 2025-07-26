@@ -27,7 +27,7 @@ void drawGrid(int gridSize) {
 
   for (int i = 0; i < gridSize; i++) {
     for (int j = 0; j < gridSize; j++) {
-      gotoxy(i * 2, j + GRID_START_POS);
+      gotoxy(i * 2 + 1, j + GRID_START_POS);
       printf("  ");
     }
   }
