@@ -15,7 +15,8 @@
     "stdarg.h": "c",
     "console.h": "c",
     "unistd.h": "c",
-    "stdint.h": "c"
+    "stdint.h": "c",
+    "time.h": "c"
   },
   "cSpell.words": [
     "Bulguksa",
@@ -33,5 +34,6 @@
     "oldt",
     "readn",
     "Seokguram"
-  ]
+  ],
+  "editor.formatOnSave": true
 }
