@@ -6,3 +6,4 @@ self/endian_conv
 *.pdf
 
 example.c
+test.c

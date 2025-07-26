@@ -16,3 +16,6 @@ server_debug: server.c console.c game.c
 
 rm:
 	rm server.out client.out server_debug.out client_debug.out
+
+test:
+	gcc -o test.c ./test/test.c
