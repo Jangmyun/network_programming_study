@@ -39,6 +39,16 @@ void drawGrid(int gridSize) {
   return;
 }
 
+void transPositionXY(Position *pos, int gridIdx, int gridSize) {
+  pos->x = (gridIdx % gridSize) * 2;
+  pos->y = (gridIdx / gridSize);
+}
+
+int transPositionX(int gridIdx, int gridSize) {
+  return (gridIdx % gridSize) * 2;
+}
+int transPosY(int gridIdx, int gridSize) { return (gridIdx / gridSize) + 1; }
+
 /* =====SERVER===== */
 
 board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
@@ -64,7 +74,6 @@ board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
   // shuffle한 array의 인덱스 0부터 boardCount-1 까지의 내용을 복사
   board_pos *boardPositions = (board_pos *)malloc(sizeof(u_int16_t));
   memcpy(boardPositions, grids, sizeof(board_pos) * boardCount);
-  printf("memcpy\n");
 
   if (boardPositions == NULL) {
     fprintf(stderr, "board position malloc error\n");
@@ -81,6 +90,6 @@ void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount) {
   }
 
   for (int i = 0; i < boardCount; i++) {
-    printf("%d\n", boardPositions[i]);
+    printf("%d ", boardPositions[i]);
   }
 }

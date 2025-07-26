@@ -1,6 +1,11 @@
 #ifndef GAME_H
 #define GAME_H
 
+#define BIT_SET(var, pos) ((var) |= (1U << (pos)))
+#define BIT_CLR(var, pos) ((var) &= ~(1U << (pos)))
+#define BIT_TOGGLE(var, pos) ((var) ^= (1U << (pos)))
+#define BIT_ISSET(var, pos) (((var) >> (pos)) & 1U)
+
 #define MAX_GRID_SIZE 32
 #define MAX_BOARD (MAX_GRID_SIZE * MAX_GRID_SIZE)
 typedef long board_mask;
@@ -13,10 +18,12 @@ typedef u_int16_t board_pos;
 #define GRID_START_POS 7
 #define BLANK_PER_GRID 2  // 하나의 GRID를 공백 두개로 표현
 
-#define COLOR_BLANK "\033[100m"
+#define COLOR_BLANK "\033[40m"
 #define COLOR_PLAYER "\033[47m"
 #define COLOR_RED_TEAM "\033[101m"
+#define COLOR_RED_BOARD "\033[41m"
 #define COLOR_BLUE_TEAM "\033[104m"
+#define COLOR_BLUE_BOARD "\033[44m"
 
 #include <string.h>
 #include <sys/time.h>
@@ -26,6 +33,11 @@ typedef u_int16_t board_pos;
 typedef struct {
   board_mask board_bits[MAX_BOARD / BOARD_BITS];
 } board_bitarray;
+
+typedef struct {
+  u_int8_t x;
+  u_int8_t y;
+} Position;
 
 // 서버가 클라이언트 각각에 보내는 Game 준비용
 typedef struct _GameInitInfo {
@@ -48,6 +60,11 @@ void setGameInitInfo(GameInitInfo *gameInfo, u_int8_t playerCount,
 
 void setColor(char *color);
 void clearColor();
+
+void transPositionXY(Position *pos, int gridIdx, int gridSize);
+int transPositionX(int gridIdx, int gridSize);
+int transPosY(int gridIdx, int gridSize);
+
 void drawGrid(int gridSize);
 
 /* =====SERVER===== */
