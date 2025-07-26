@@ -33,7 +33,6 @@ int main(int arc, char *argv[]) {
   sleep(5);
 
   gotoxy(window_x, window_y);
-
   free(boardPositions);
   return 0;
 }
@@ -43,8 +42,14 @@ void drawBoards() {
   LockDisplay();
   for (int i = 0; i < boardCount; i++) {
     transPositionXY(&pos, boardPositions[i], gameInitInfo.gridSize);
-    setColor(COLOR_RED_BOARD);
-    gotoxy(pos.x, pos.y + GRID_START_POS);
+
+    if (BIT_ISSET(board_status, i)) {
+      setColor(COLOR_BLUE_BOARD);
+    } else {
+      setColor(COLOR_RED_BOARD);
+    }
+
+    gotoxy(pos.x + 1, pos.y + GRID_START_POS);
     printf("  ");
     clearColor();
     fflush(stdout);
