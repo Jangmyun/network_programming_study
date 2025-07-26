@@ -16,3 +16,27 @@ void setGameInitInfo(GameInitInfo *gameInfo, u_int8_t playerCount,
   return;
 }
 
+/* =====CLIENT===== */
+
+void setColor(char *color) { printf("%s", color); }
+void clearColor() { printf("\033[39;49m"); }
+
+void drawGrid(int gridSize) {
+  pthread_mutex_lock(&display_mutex);
+
+  setColor(COLOR_BLANK);
+
+  for (int i = 0; i < gridSize; i++) {
+    for (int j = 0; j < gridSize; j++) {
+      gotoxy(i * 2, j + GRID_START_POS);
+      printf("  ");
+    }
+  }
+
+  clearColor();
+
+  fflush(stdout);
+  pthread_mutex_unlock(&display_mutex);
+  return;
+}
+
