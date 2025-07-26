@@ -1,11 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define BIT_SET(var, pos) ((var) |= (1U << (pos)))
-#define BIT_CLR(var, pos) ((var) &= ~(1U << (pos)))
-#define BIT_TOGGLE(var, pos) ((var) ^= (1U << (pos)))
-#define BIT_ISSET(var, pos) (((var) >> (pos)) & 1U)
-
 #define MAX_GRID_SIZE 32
 #define MAX_BOARD (MAX_GRID_SIZE * MAX_GRID_SIZE)
 typedef long board_mask;
@@ -39,8 +34,9 @@ typedef struct {
   ((bitarray).board_bits[(pos) / BOARD_BITS] |= (1L << (pos % BOARD_BITS)))
 #define BIT_CLR(bitarray, pos) \
   ((bitarray).board_bits[(pos) / BOARD_BITS] &= ~(1L << (pos % BOARD_BITS)))
-#define BIT_ISSET(bitarray, pos) \
-  ((bitarray).board_bits[(pos) / BOARD_BITS] & (1L << (pos % BOARD_BITS)))
+#define BIT_ISSET(bitarray, pos)                                               \
+  (((bitarray).board_bits[(pos) / BOARD_BITS] & (1L << (pos % BOARD_BITS))) != \
+   0)
 
 typedef struct {
   u_int8_t x;
@@ -79,6 +75,8 @@ void drawGrid(int gridSize);
 
 // Grid안에서 판의 위치 랜덤 생성
 board_pos *generateBoardPosition(GameInitInfo *gameInitInfo);
+void randomizeBoardColor(board_bitarray *ba, u_int16_t boardCount);
 
 void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount);
+void printfBoardStatus(board_bitarray *ba, u_int16_t boardCount);
 #endif

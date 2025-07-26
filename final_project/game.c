@@ -83,6 +83,28 @@ board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
   return boardPositions;
 }
 
+void randomizeBoardColor(board_bitarray *ba, u_int16_t boardCount) {
+  u_int16_t boards[boardCount];
+  for (int i = 0; i < boardCount; i++) {
+    boards[i] = i;
+  }
+
+  // shuffle array
+  srand(time(NULL));
+  u_int16_t temp, randomIdx;
+  for (int i = 0; i < boardCount; i++) {
+    randomIdx = rand() % (boardCount - i) + i;
+    temp = boards[i];
+    boards[i] = boards[randomIdx];
+    boards[randomIdx] = temp;
+  }
+
+  // shuffle한 array의 절반을 blue팀으로 만들기
+  for (int i = 0; i < (boardCount / 2); i++) {
+    BIT_SET(*ba, boards[i]);
+  }
+}
+
 void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount) {
   if (boardPositions == NULL) {
     fprintf(stderr, "Board positions is not generated.\n");
@@ -92,4 +114,15 @@ void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount) {
   for (int i = 0; i < boardCount; i++) {
     printf("%d ", boardPositions[i]);
   }
+}
+
+void printfBoardStatus(board_bitarray *ba, u_int16_t boardCount) {
+  int count = 0;
+  for (int i = 0; i < boardCount; i++) {
+    printf("%d ", BIT_ISSET(*ba, i));
+    if (BIT_ISSET(*ba, i)) {
+      count++;
+    }
+  }
+  printf("\n%d\n", count);
 }
