@@ -1,4 +1,3 @@
-#include "game.h"#include "game.h"
 #include "game.h"
 
 #include "console.h"
@@ -40,3 +39,48 @@ void drawGrid(int gridSize) {
   return;
 }
 
+/* =====SERVER===== */
+
+board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
+  u_int8_t gridSize = gameInitInfo->gridSize;
+  u_int16_t boardCount = gameInitInfo->boardCount;
+  u_int16_t gridsNum = gridSize * gridSize;
+
+  u_int16_t grids[gridsNum];
+  for (int i = 0; i < gridsNum; i++) {
+    grids[i] = i;
+  }
+
+  // shuffle array
+  srand(time(NULL));
+  u_int16_t temp, randomIdx;
+  for (u_int16_t i = 0; i < gridsNum; i++) {
+    randomIdx = rand() % (gridsNum - i) + i;
+    temp = grids[i];
+    grids[i] = grids[randomIdx];
+    grids[randomIdx] = temp;
+  }
+
+  // shuffle한 array의 인덱스 0부터 boardCount-1 까지의 내용을 복사
+  board_pos *boardPositions = (board_pos *)malloc(sizeof(u_int16_t));
+  memcpy(boardPositions, grids, sizeof(board_pos) * boardCount);
+  printf("memcpy\n");
+
+  if (boardPositions == NULL) {
+    fprintf(stderr, "board position malloc error\n");
+    return NULL;
+  }
+
+  return boardPositions;
+}
+
+void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount) {
+  if (boardPositions == NULL) {
+    fprintf(stderr, "Board positions is not generated.\n");
+    exit(1);
+  }
+
+  for (int i = 0; i < boardCount; i++) {
+    printf("%d\n", boardPositions[i]);
+  }
+}
