@@ -73,7 +73,7 @@ void drawBoards() {
       setColor(COLOR_RED_BOARD);
     }
 
-    gotoxy(pos.x + 1, pos.y + GRID_START_POS);
+    gotoxy(pos.x, pos.y);
     printf("  ");
     clearColor();
     fflush(stdout);

@@ -40,8 +40,8 @@ void drawGrid(int gridSize) {
 }
 
 void transPositionXY(Position *pos, int gridIdx, int gridSize) {
-  pos->x = (gridIdx % gridSize) * 2;
-  pos->y = (gridIdx / gridSize);
+  pos->x = (gridIdx % gridSize) * 2 + 1;
+  pos->y = (gridIdx / gridSize) + GRID_START_POS;
 }
 
 int transPositionX(int gridIdx, int gridSize) {
