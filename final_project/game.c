@@ -52,6 +52,35 @@ int transPosY(int gridIdx, int gridSize) { return (gridIdx / gridSize) + 1; }
 
 /* =====SERVER===== */
 
+// 입력받은 각 argument 혹은 기본값이 적절한지 validation check
+void validateGameInfo(GameInitInfo *g) {
+  int exitCond = 0;
+
+  // player 수는 짝수이며~ 8명 이하
+  if (g->playerCount > 8 || g->playerCount < 2 || (g->playerCount % 2) != 0) {
+    printError("player count must be even (2,4,6,8)");
+    exitCond = 1;
+  }
+  // size는 짝수이며 최대 32
+  if (g->gridSize < 2 || g->gridSize > 32 || g->gridSize % 2 != 0) {
+    printError("grid size must be even (2-32)");
+    exitCond = 1;
+  }
+  // boardCount 는 짝수이며 gridSize의 제곱 이하
+  if (g->boardCount < 2 || g->boardCount > ((g->gridSize) * (g->gridSize)) ||
+      g->boardCount % 2 != 0) {
+    printError("board number must be even (2-gridSize^2)");
+    exitCond = 1;
+  }
+  // 최소 10초
+  if (g->gameTime.tv_sec < 10) {
+    printError("Time should be at lease 10sec");
+    exitCond = 1;
+  }
+
+  if (exitCond) exit(1);
+}
+
 board_pos *generateBoardPosition(GameInitInfo *gameInitInfo,
                                  board_bitarray *ba) {
   u_int8_t gridSize = gameInitInfo->gridSize;
@@ -113,6 +142,8 @@ void randomizeBoardColor(board_bitarray *ba, u_int16_t boardCount) {
   }
 }
 
+void printError(char *errStr) { fprintf(stderr, "%s\n", errStr); }
+
 void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount) {
   if (boardPositions == NULL) {
     fprintf(stderr, "Board positions is not generated.\n");
@@ -133,4 +164,12 @@ void printfBoardStatus(board_bitarray *ba, u_int16_t boardCount) {
     }
   }
   printf("\n%d\n", count);
+}
+
+void printGameInfo(GameInitInfo *gii) {
+  printf("===GAME INFO===\n");
+
+  printf("playerCount=%d, gridSize=%d, boardCount=%d, gameTime=%ld\n",
+         gii->playerCount, gii->gridSize, gii->boardCount,
+         gii->gameTime.tv_sec);
 }

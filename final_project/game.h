@@ -79,11 +79,16 @@ void drawGrid(int gridSize);
 
 /* =====SERVER===== */
 
+void validateGameInfo(GameInitInfo *gii);
+
 // Grid안에서 판의 위치 랜덤 생성
 board_pos *generateBoardPosition(GameInitInfo *gameInitInfo,
                                  board_bitarray *ba);
 void randomizeBoardColor(board_bitarray *ba, u_int16_t boardCount);
 
+// for debugging
+void printError(char *errStr);
 void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount);
 void printfBoardStatus(board_bitarray *ba, u_int16_t boardCount);
+void printGameInfo(GameInitInfo *gii);
 #endif
