@@ -4,6 +4,7 @@
 #include "game.h"
 
 u_int16_t *boardPositions = NULL;
+u_int16_t *otherPlayerPos = NULL;
 u_int16_t boardCount = 200;
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;
@@ -17,11 +18,14 @@ u_int16_t playerPos;
 int setPlayerInitPos(u_int8_t id);
 void drawBoards();
 void drawPlayer();
+void *drawGame(void *arg);
+
+int findBoardIdxByGridIdx(u_int16_t gridIdx);
 
 int main(int arc, char *argv[]) {
   struct timeval gameTime = {60, 0};
   setGameInitInfo(&gameInitInfo, 2, 1, 32, 200, boardPositions, gameTime);
-  boardPositions = generateBoardPosition(&gameInitInfo);
+  boardPositions = generateBoardPosition(&gameInitInfo, &board_pos_bitarray);
   randomizeBoardColor(&board_status, boardCount);
 
   playerPos = setPlayerInitPos(gameInitInfo.playerId);
@@ -29,22 +33,99 @@ int main(int arc, char *argv[]) {
   window_x = getWindowWidth();
   window_y = getWindowHeight();
 
-  clrscr();
-
-  drawGrid(gameInitInfo.gridSize);
+  EnableCursor(0);
 
 #ifdef DEBUG
   printBoardPositions(boardPositions, boardCount);
 #endif
 
-  drawBoards();
-  drawPlayer();
+  clrscr();
 
-  sleep(5);
+  pthread_t drawerTid;
+  pthread_create(&drawerTid, NULL, drawGame, NULL);
+
+  pthread_detach(drawerTid);
+
+  while (1) {
+    if (kbhit()) {
+      int key = getch();
+
+      int newPlayerPos = playerPos;
+      switch (key) {
+        case 'w':
+          if (playerPos >= gameInitInfo.gridSize) {
+            newPlayerPos -= gameInitInfo.gridSize;
+          }
+          break;
+        case 'a':
+          if (playerPos % gameInitInfo.gridSize != 0) {
+            newPlayerPos--;
+          }
+          break;
+        case 's':
+          if (playerPos < gameInitInfo.gridSize * (gameInitInfo.gridSize - 1)) {
+            newPlayerPos += gameInitInfo.gridSize;
+          }
+          break;
+        case 'd':
+          if ((playerPos + 1) % gameInitInfo.gridSize != 0) {
+            newPlayerPos++;
+          }
+          break;
+        case ENTER:
+          PrintXY(1, window_y, "PlayerPos = %d", newPlayerPos);
+          break;
+      }
+
+      Position new, prev;
+      transPositionXY(&new, newPlayerPos, gameInitInfo.gridSize);
+      transPositionXY(&prev, playerPos, gameInitInfo.gridSize);
+
+      if (newPlayerPos != playerPos) {
+        int ret = findBoardIdxByGridIdx(playerPos);
+        LockDisplay();
+        switch (ret) {
+          case -1:  // BLANK
+            setColor(COLOR_BLANK);
+            break;
+          case 0:  // RED
+            setColor(COLOR_RED_BOARD);
+            break;
+          case 1:  // BLUE
+            setColor(COLOR_BLUE_BOARD);
+            break;
+          default:
+            setColor(COLOR_BLANK);
+            break;
+        }
+
+        gotoxy(prev.x, prev.y);
+        printf("  ");
+        clearColor();
+        UnlockDisplay();
+
+        playerPos = newPlayerPos;
+        drawPlayer();
+      }
+    }
+  }
 
   gotoxy(window_x, window_y);
   free(boardPositions);
   return 0;
+}
+
+void *drawGame(void *arg) {
+  int myId = gameInitInfo.playerId;
+
+  while (1) {
+    drawGrid(gameInitInfo.gridSize);
+    drawBoards();
+    drawPlayer();
+    MySleep(100);
+  }
+
+  return NULL;
 }
 
 int setPlayerInitPos(u_int8_t id) {
@@ -88,18 +169,47 @@ void drawBoards() {
 }
 
 void drawPlayer() {
-  LockDisplay();
   Position p;
   transPositionXY(&p, playerPos, gameInitInfo.gridSize);
 
-  // TODO: 플레이어가 위치한 칸이 레드, 블루인지에 따라 글자색을 다르게 출력
-  // TODO: 플레이어가 위치한 칸이 board인지 체크하기 위해 board_pos_bitarray를
-  // 유지
+  LockDisplay();
 
+  int ret = findBoardIdxByGridIdx(playerPos);
+  switch (ret) {
+    case -1:  // BLANK
+      setColor(COLOR_BLANK);
+      break;
+    case 0:  // RED
+      setColor(COLOR_PLAYER_ON_RED);
+      break;
+    case 1:  // BLUE
+      setColor(COLOR_PLAYER_ON_BLUE);
+      break;
+    default:
+      setColor(COLOR_BLANK);
+      break;
+  }
   gotoxy(p.x, p.y);
-  setColor(COLOR_PLAYER);
   printf("[]");
   clearColor();
   fflush(stdout);
   UnlockDisplay();
+}
+
+// blank 위치면 -1, board 위치면 red, blue 각각 0, 1 리턴
+int findBoardIdxByGridIdx(u_int16_t gridIdx) {
+  if (BIT_ISSET(board_pos_bitarray, gridIdx)) {
+    for (int i = 0; i < gameInitInfo.boardCount; i++) {
+      if (boardPositions[i] == gridIdx) {
+        if (BIT_ISSET(board_status, i)) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    }
+  } else {
+    return -1;
+  }
+  return -1;
 }
