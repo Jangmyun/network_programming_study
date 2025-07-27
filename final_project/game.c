@@ -72,7 +72,8 @@ board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
   }
 
   // shuffle한 array의 인덱스 0부터 boardCount-1 까지의 내용을 복사
-  board_pos *boardPositions = (board_pos *)malloc(sizeof(u_int16_t));
+  board_pos *boardPositions =
+      (board_pos *)malloc(sizeof(u_int16_t) * boardCount);
   memcpy(boardPositions, grids, sizeof(board_pos) * boardCount);
 
   if (boardPositions == NULL) {
