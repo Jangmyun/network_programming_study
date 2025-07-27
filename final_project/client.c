@@ -5,7 +5,6 @@
 
 u_int16_t *boardPositions = NULL;
 u_int16_t *otherPlayerPos = NULL;
-u_int16_t boardCount = 200;
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;
 board_bitarray board_status;
@@ -26,7 +25,7 @@ int main(int arc, char *argv[]) {
   struct timeval gameTime = {60, 0};
   setGameInitInfo(&gameInitInfo, 2, 1, 32, 200, boardPositions, gameTime);
   boardPositions = generateBoardPosition(&gameInitInfo, &board_pos_bitarray);
-  randomizeBoardColor(&board_status, boardCount);
+  randomizeBoardColor(&board_status, gameInitInfo.boardCount);
 
   playerPos = setPlayerInitPos(gameInitInfo.playerId);
 
@@ -36,7 +35,7 @@ int main(int arc, char *argv[]) {
   EnableCursor(0);
 
 #ifdef DEBUG
-  printBoardPositions(boardPositions, boardCount);
+  printBoardPositions(boardPositions, gameInitInfo.boardCount);
 #endif
 
   clrscr();
@@ -151,7 +150,7 @@ int setPlayerInitPos(u_int8_t id) {
 void drawBoards() {
   Position pos;
   LockDisplay();
-  for (int i = 0; i < boardCount; i++) {
+  for (int i = 0; i < gameInitInfo.boardCount; i++) {
     transPositionXY(&pos, boardPositions[i], gameInitInfo.gridSize);
 
     if (BIT_ISSET(board_status, i)) {
