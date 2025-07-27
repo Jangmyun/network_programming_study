@@ -3,6 +3,8 @@
 #include "console.h"
 #include "game.h"
 
+#define MULTICAST_GROUP_IP "225.192.0.10"
+
 u_int16_t *boardPositions = NULL;
 u_int16_t *otherPlayerPos = NULL;
 GameInitInfo gameInitInfo;
