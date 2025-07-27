@@ -18,6 +18,7 @@ int currentPlayerId = 0;
 
 int setOptions(int argc, char *argv[], int *playerCount, int *gridSize,
                int *boardCount, int *gameSec, int *port);
+int setPlayerInitPos(u_int8_t id);
 void *recvThreadFunc(void *arg);
 
 int main(int argc, char *argv[]) {
@@ -205,5 +206,24 @@ int setOptions(int argc, char *argv[], int *playerCount, int *gridSize,
         exit(1);
     }
   }
+  return 0;
+}
+
+int setPlayerInitPos(u_int8_t id) {
+  int playerPositionBranch = id % 4;  // 0,1,2,3
+
+  // 0-좌상단 1-우하단 2-좌하단 3-우상단
+  switch (playerPositionBranch) {
+    case 0:
+      return 0;
+    case 1:
+      return gameInitInfo.gridSize * gameInitInfo.gridSize - 1;
+    case 2:
+      return gameInitInfo.gridSize * gameInitInfo.gridSize -
+             gameInitInfo.gridSize;
+    case 3:
+      return gameInitInfo.gridSize - 1;
+  }
+
   return 0;
 }

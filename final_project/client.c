@@ -16,7 +16,6 @@ int window_y;
 
 u_int16_t playerPos;
 
-int setPlayerInitPos(u_int8_t id);
 void drawBoards();
 void drawPlayer();
 void *drawGame(void *arg);
@@ -127,26 +126,6 @@ void *drawGame(void *arg) {
   }
 
   return NULL;
-}
-
-int setPlayerInitPos(u_int8_t id) {
-  // 최대 플레이어 수 8명 (id 0-7) 이므로 4로 나눈 나머지를 기준으로 위치 지정
-  int playerPosBranch = id / 4;
-
-  switch (playerPosBranch) {
-    case 0:
-      return 0;
-    case 1:
-      return gameInitInfo.gridSize * gameInitInfo.gridSize;
-    case 2:
-      return 0;
-    case 3:
-      return gameInitInfo.gridSize * gameInitInfo.gridSize;
-    default:
-      return 0;
-  }
-
-  return 0;
 }
 
 void drawBoards() {
