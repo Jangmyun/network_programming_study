@@ -29,6 +29,7 @@ void drawGrid(int gridSize) {
     for (int j = 0; j < gridSize; j++) {
       gotoxy(i * 2 + 1, j + GRID_START_POS);
       printf("  ");
+      printf("\033[0K");
     }
   }
 
@@ -51,7 +52,8 @@ int transPosY(int gridIdx, int gridSize) { return (gridIdx / gridSize) + 1; }
 
 /* =====SERVER===== */
 
-board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
+board_pos *generateBoardPosition(GameInitInfo *gameInitInfo,
+                                 board_bitarray *ba) {
   u_int8_t gridSize = gameInitInfo->gridSize;
   u_int16_t boardCount = gameInitInfo->boardCount;
   u_int16_t gridsNum = gridSize * gridSize;
@@ -75,6 +77,11 @@ board_pos *generateBoardPosition(GameInitInfo *gameInitInfo) {
   board_pos *boardPositions =
       (board_pos *)malloc(sizeof(u_int16_t) * boardCount);
   memcpy(boardPositions, grids, sizeof(board_pos) * boardCount);
+
+  // 전체 grid 중 어떤 인덱스가 board인지 표시
+  for (int i = 0; i < boardCount; i++) {
+    BIT_SET(*ba, boardPositions[i]);
+  }
 
   if (boardPositions == NULL) {
     fprintf(stderr, "board position malloc error\n");

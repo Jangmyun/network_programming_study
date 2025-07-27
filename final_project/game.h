@@ -20,6 +20,12 @@ typedef u_int16_t board_pos;
 #define COLOR_BLUE_TEAM "\033[104m"
 #define COLOR_BLUE_BOARD "\033[44m"
 
+// Player가 서 있는 위치에 따른 색 변화
+#define COLOR_PLAYER_ON_BLUE "\033[104m"
+#define COLOR_PLAYER_ON_RED "\033[101m"
+
+#define ENTER 13
+
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -74,7 +80,8 @@ void drawGrid(int gridSize);
 /* =====SERVER===== */
 
 // Grid안에서 판의 위치 랜덤 생성
-board_pos *generateBoardPosition(GameInitInfo *gameInitInfo);
+board_pos *generateBoardPosition(GameInitInfo *gameInitInfo,
+                                 board_bitarray *ba);
 void randomizeBoardColor(board_bitarray *ba, u_int16_t boardCount);
 
 void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount);
