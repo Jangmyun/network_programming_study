@@ -5,8 +5,8 @@
 
 #define MULTICAST_GROUP_IP "225.192.0.10"
 
-u_int16_t *boardPositions = NULL;
-u_int16_t *otherPlayerPos = NULL;
+board_pos *boardPositions = NULL;
+u_int16_t *playerPositions = NULL;
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;
 board_bitarray board_status;
@@ -22,18 +22,66 @@ void *drawGame(void *arg);
 
 int findBoardIdxByGridIdx(u_int16_t gridIdx);
 
-int main(int arc, char *argv[]) {
-  struct timeval gameTime = {60, 0};
-  setGameInitInfo(&gameInitInfo, 2, 1, 32, 200, boardPositions, gameTime);
-  boardPositions = generateBoardPosition(&gameInitInfo, &board_pos_bitarray);
-  randomizeBoardColor(&board_status, gameInitInfo.boardCount);
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s <IP> <port>\n", argv[0]);
+    exit(1);
+  }
 
-  playerPos = setPlayerInitPos(gameInitInfo.playerId);
+  int tcp_sock;
+  struct sockaddr_in serv_tcp_addr;
+
+  int rw_len;
+
+  tcp_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+  memset(&serv_tcp_addr, 0, sizeof(serv_tcp_addr));
+  serv_tcp_addr.sin_family = AF_INET;
+  serv_tcp_addr.sin_addr.s_addr = inet_addr(argv[1]);
+  serv_tcp_addr.sin_port = htons(atoi(argv[2]));
+
+  if (connect(tcp_sock, (struct sockaddr *)&serv_tcp_addr,
+              sizeof(serv_tcp_addr)) == -1) {
+    perror("tcp socket connect() failed");
+    exit(1);
+  }
+
+  // GameInitInfo 받아오기
+  // gameInitInfo update
+  rw_len = readn(tcp_sock, &gameInitInfo, sizeof(GameInitInfo));
+
+  // 받아온 gameInitInfo 기반으로 board count만큼 boardPosition 동적할당
+  boardPositions =
+      (board_pos *)malloc(sizeof(board_pos) * gameInitInfo.boardCount);
+
+  // 반복하여 boardPosition 수신
+  for (int i = 0; i < gameInitInfo.boardCount; i++) {
+    rw_len = readn(tcp_sock, &boardPositions[i], sizeof(board_pos));
+  }
+  gameInitInfo.boardPositions = boardPositions;
+
+  // board_position을 모두 1로 설정한 bitarray 수신
+  rw_len = readn(tcp_sock, &board_pos_bitarray, sizeof(board_bitarray));
+
+  rw_len = readn(tcp_sock, &board_status, sizeof(board_bitarray));
+
+  // otherPlayerPosition 정보 가져오기
+  playerPositions = (u_int16_t *)malloc(
+      sizeof(u_int16_t) * gameInitInfo.playerCount);  // player 수 만큼 할당
+
+  for (int i = 0; i < gameInitInfo.playerCount; i++) {
+    rw_len = readn(tcp_sock, &playerPositions[i], sizeof(u_int16_t));
+  }
+
+  gameInitInfo.boardPositions = boardPositions;
+
+  // 받아온 초기 플레이어 위치로 playerPos 초기화
+  playerPos = playerPositions[gameInitInfo.playerId];
 
   window_x = getWindowWidth();
   window_y = getWindowHeight();
 
-  EnableCursor(0);
+  EnableCursor(0);  // disable cursor
 
 #ifdef DEBUG
   printBoardPositions(boardPositions, gameInitInfo.boardCount);
@@ -110,7 +158,9 @@ int main(int arc, char *argv[]) {
     }
   }
 
+  EnableCursor(1);
   gotoxy(window_x, window_y);
+  free(playerPositions);
   free(boardPositions);
   return 0;
 }

@@ -5,6 +5,7 @@
 #define TTL 20
 
 board_pos *boardPositions = NULL;
+u_int16_t *playerPositions = NULL;
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;  // 어떤 위치가 board인지
 board_bitarray board_status;        // board들의 상태 (blue, red);
@@ -50,6 +51,13 @@ int main(int argc, char *argv[]) {
   printGameInfo(&gameInitInfo);
   printf("PORT = %d\n", port);
 #endif
+
+  // playerPosition playerCount만큼 동적 할당 후 각 인덱스에 번호 부여
+  playerPositions =
+      (u_int16_t *)malloc(sizeof(u_int16_t) * gameInitInfo.playerCount);
+  for (int i = 0; i < gameInitInfo.playerCount; i++) {
+    playerPositions[i] = setPlayerInitPos(i);
+  }
 
   // 설정한 보드의 개수만큼 전체 grid 인덱스에서 보드의 위치를 랜덤하게 설정
   boardPositions = generateBoardPosition(&gameInitInfo, &board_pos_bitarray);
@@ -161,6 +169,7 @@ int main(int argc, char *argv[]) {
     currentPlayerId++;
   }
 
+  free(playerPositions);
   free(boardPositions);
   return 0;
 }
@@ -170,9 +179,29 @@ void *recvThreadFunc(void *arg) {
   int playerId = t_arg.playerId;
   int sock = t_arg.sock;
 
+  int rw_len;
+
+  // gameInitInfo 전송
   GameInitInfo info = gameInitInfo;
   info.playerId = playerId;
-  writen(sock, &info, sizeof(info));
+  rw_len = writen(sock, &info, sizeof(info));
+
+  // boardPositions 전송
+  for (int i = 0; i < gameInitInfo.boardCount; i++) {
+    rw_len = writen(sock, &boardPositions[i], sizeof(board_pos));
+  }
+
+  // board_pos_bitarray 전송
+  // (grid idx를 표현하는 비트열에서 board position을 모두 1로 set한 비트열)
+  rw_len = writen(sock, &board_pos_bitarray, sizeof(board_bitarray));
+
+  // board status 전송
+  rw_len = writen(sock, &board_status, sizeof(board_bitarray));
+
+  // playerPositions 전송
+  for (int i = 0; i < gameInitInfo.playerCount; i++) {
+    writen(sock, &playerPositions[i], sizeof(u_int16_t));
+  }
 
   free(arg);
   return NULL;
