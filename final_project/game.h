@@ -103,4 +103,7 @@ void printError(char *errStr);
 void printBoardPositions(board_pos *boardPositions, u_int16_t boardCount);
 void printfBoardStatus(board_bitarray *ba, u_int16_t boardCount);
 void printGameInfo(GameInitInfo *gii);
+
+ssize_t readn(int fd, void *data, size_t n);
+ssize_t writen(int fd, const void *data, size_t n);
 #endif
