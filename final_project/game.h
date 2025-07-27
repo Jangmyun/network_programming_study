@@ -26,7 +26,9 @@ typedef u_int16_t board_pos;
 
 #define ENTER 13
 
+#include <arpa/inet.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
 
@@ -58,6 +60,16 @@ typedef struct _GameInitInfo {
   board_pos *boardPositions;
   struct timeval gameTime;
 } GameInitInfo;
+
+typedef struct _PlayerAction {
+  u_int16_t position;
+  u_int8_t colorFlag;
+} PlayerAction;
+
+typedef struct _GameStatus {
+  u_int16_t playerPositions[8];
+  board_bitarray boardStatus;
+} GameStatus;
 
 /* =====COMMON===== */
 
