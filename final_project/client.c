@@ -22,7 +22,8 @@ int window_y;
 u_int16_t playerPos;
 
 void drawBoards();
-void drawPlayer();
+void drawPlayer(u_int16_t pos, char *icon);
+void drawOtherPlayers();
 void *drawGame(void *arg);
 void *recvGameStatus(void *arg);
 
@@ -237,7 +238,7 @@ int main(int argc, char *argv[]) {
         UnlockDisplay();
 
         playerPos = newPlayerPos;
-        drawPlayer();
+        drawPlayer(playerPos, PLAYER_CHAR);
       }
     }
   }
@@ -254,7 +255,8 @@ void *drawGame(void *arg) {
   while (1) {
     drawGrid(gameInitInfo.gridSize);
     drawBoards();
-    drawPlayer();
+    drawOtherPlayers();
+    drawPlayer(playerPos, PLAYER_CHAR);
     MySleep(100);
   }
 
@@ -311,13 +313,13 @@ void drawBoards() {
   UnlockDisplay();
 }
 
-void drawPlayer() {
+void drawPlayer(u_int16_t pos, char *icon) {
   Position p;
-  transPositionXY(&p, playerPos, gameInitInfo.gridSize);
+  transPositionXY(&p, pos, gameInitInfo.gridSize);
 
   LockDisplay();
 
-  int ret = findBoardColorByGridIdx(playerPos);
+  int ret = findBoardColorByGridIdx(pos);
   switch (ret) {
     case -1:  // BLANK
       setColor(COLOR_BLANK);
@@ -333,10 +335,18 @@ void drawPlayer() {
       break;
   }
   gotoxy(p.x, p.y);
-  printf("[]");
+  printf("%s", icon);
   fflush(stdout);
   clearColor();
   UnlockDisplay();
+}
+
+void drawOtherPlayers() {
+  for (int i = 0; i < gameInitInfo.playerCount; i++) {
+    if (i != gameInitInfo.playerId) {
+      drawPlayer(playerPositions[i], (i % 2 == 0 ? BLUE_CHAR : RED_CHAR));
+    }
+  }
 }
 
 int findBoardIdxByGridIdx(u_int16_t gridIdx) {
