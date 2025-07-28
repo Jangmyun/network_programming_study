@@ -68,7 +68,7 @@ typedef struct _GameInitInfo {
 
 typedef struct _PlayerAction {
   u_int16_t position;
-  u_int8_t colorFlag;
+  int colorFlag;
 } PlayerAction;
 
 typedef struct _GameStatus {
