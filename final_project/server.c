@@ -5,7 +5,7 @@
 #define TTL 20
 
 board_pos *boardPositions = NULL;
-u_int16_t *playerPositions = NULL;
+u_int16_t playerPositions[8];
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;  // 어떤 위치가 board인지
 board_bitarray board_status;        // board들의 상태 (blue, red);
@@ -20,6 +20,7 @@ int currentPlayerId = 0;
 int setOptions(int argc, char *argv[], int *playerCount, int *gridSize,
                int *boardCount, int *gameSec, int *port);
 int setPlayerInitPos(u_int8_t id);
+int findBoardIdxByGridIdx(u_int16_t gridIdx);
 void *recvThreadFunc(void *arg);
 
 int main(int argc, char *argv[]) {
@@ -53,8 +54,6 @@ int main(int argc, char *argv[]) {
 #endif
 
   // playerPosition playerCount만큼 동적 할당 후 각 인덱스에 번호 부여
-  playerPositions =
-      (u_int16_t *)malloc(sizeof(u_int16_t) * gameInitInfo.playerCount);
   for (int i = 0; i < gameInitInfo.playerCount; i++) {
     playerPositions[i] = setPlayerInitPos(i);
   }
@@ -169,7 +168,6 @@ int main(int argc, char *argv[]) {
     currentPlayerId++;
   }
 
-  free(playerPositions);
   free(boardPositions);
   return 0;
 }
@@ -201,6 +199,25 @@ void *recvThreadFunc(void *arg) {
   // playerPositions 전송
   for (int i = 0; i < gameInitInfo.playerCount; i++) {
     writen(sock, &playerPositions[i], sizeof(u_int16_t));
+  }
+
+  // PlayerAction을 수신
+  PlayerAction pa;
+  int boardIdx;
+  while (1) {
+    readn(sock, &pa, sizeof(PlayerAction));
+    playerPositions[playerId] = pa.position;
+    if ((boardIdx = findBoardIdxByGridIdx(pa.position)) != -1) {
+      if (pa.colorFlag) {
+        BIT_SET(board_status, boardIdx);
+      } else {
+        BIT_CLR(board_status, boardIdx);
+      }
+    }
+#ifdef DEBUG
+    printf("PlayerPos=%d , colorFlipped=%d\n", playerPositions[playerId],
+           pa.colorFlag);
+#endif
   }
 
   free(arg);
@@ -255,4 +272,14 @@ int setPlayerInitPos(u_int8_t id) {
   }
 
   return 0;
+}
+int findBoardIdxByGridIdx(u_int16_t gridIdx) {
+  if (!BIT_ISSET(board_pos_bitarray, gridIdx)) return -1;
+
+  for (int i = 0; i < gameInitInfo.boardCount; i++) {
+    if (boardPositions[i] == gridIdx) {
+      return i;
+    }
+  }
+  return -1;
 }
