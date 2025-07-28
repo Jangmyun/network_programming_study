@@ -216,3 +216,14 @@ ssize_t writen(int fd, const void *data, size_t n) {
 
   return n - left;
 }
+
+int countBlue(board_bitarray *ba, int boardCount) {
+  int c = 0;
+  for (int i = 0; i < boardCount; i++) {
+    if (BIT_ISSET(*ba, i)) {
+      c++;
+    }
+  }
+
+  return c;
+}

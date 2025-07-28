@@ -90,6 +90,8 @@ void setGameInitInfo(GameInitInfo *gameInfo, u_int8_t playerCount,
                      u_int8_t playerId, u_int8_t gridSize, u_int16_t boardCount,
                      board_pos *boardPosition, struct timeval gameTime);
 
+int countBlue(board_bitarray *ba, int boardCount);
+
 /* =====CLIENT===== */
 
 void setColor(char *color);
