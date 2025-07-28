@@ -6,7 +6,7 @@
 #define MULTICAST_GROUP_IP "225.192.0.10"
 
 board_pos *boardPositions = NULL;
-u_int16_t *playerPositions = NULL;
+u_int16_t playerPositions[8];
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;
 board_bitarray board_status;
@@ -106,9 +106,6 @@ int main(int argc, char *argv[]) {
   rw_len = readn(tcp_sock, &board_status, sizeof(board_bitarray));
 
   // otherPlayerPosition 정보 가져오기
-  playerPositions = (u_int16_t *)malloc(
-      sizeof(u_int16_t) * gameInitInfo.playerCount);  // player 수 만큼 할당
-
   for (int i = 0; i < gameInitInfo.playerCount; i++) {
     rw_len = readn(tcp_sock, &playerPositions[i], sizeof(u_int16_t));
   }
@@ -120,6 +117,8 @@ int main(int argc, char *argv[]) {
 
   window_x = getWindowWidth();
   window_y = getWindowHeight();
+
+  int playerPosColor;
 
   EnableCursor(0);  // disable cursor
 
@@ -133,6 +132,8 @@ int main(int argc, char *argv[]) {
   pthread_create(&drawerTid, NULL, drawGame, NULL);
 
   pthread_detach(drawerTid);
+
+  PlayerAction pa;
 
   while (1) {
     if (kbhit()) {
@@ -160,8 +161,23 @@ int main(int argc, char *argv[]) {
             newPlayerPos++;
           }
           break;
-        case ENTER:
-          PrintXY(1, window_y, "PlayerPos = %d", newPlayerPos);
+        case ' ':
+          pa.position = playerPos;
+          playerPosColor = findBoardColorByGridIdx(playerPos);
+          if (playerPosColor != -1) {
+            int boardIdx = findBoardIdxByGridIdx(playerPos);
+            pa.colorFlag = !playerPosColor;
+            LockDisplay();
+            if (pa.colorFlag) {
+              BIT_SET(board_status, boardIdx);
+            } else {
+              BIT_CLR(board_status, boardIdx);
+            }
+            UnlockDisplay();
+            drawBoards();
+            // 뒤집기
+          }
+          writen(tcp_sock, &pa, sizeof(pa));
           break;
       }
 
@@ -171,6 +187,12 @@ int main(int argc, char *argv[]) {
 
       if (newPlayerPos != playerPos) {
         int ret = findBoardColorByGridIdx(playerPos);
+
+        pa.position = newPlayerPos;
+        pa.colorFlag = ret;
+
+        writen(tcp_sock, &pa, sizeof(pa));
+
         LockDisplay();
         switch (ret) {
           case -1:  // BLANK
@@ -200,7 +222,6 @@ int main(int argc, char *argv[]) {
 
   EnableCursor(1);
   gotoxy(window_x, window_y);
-  free(playerPositions);
   free(boardPositions);
   return 0;
 }
