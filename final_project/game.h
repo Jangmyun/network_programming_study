@@ -22,10 +22,11 @@ typedef u_int16_t board_pos;
 #define COLOR_BLUE_BOARD "\033[44m"
 
 // Player가 서 있는 위치에 따른 색 변화
-#define COLOR_PLAYER_ON_BLUE "\033[104m"
-#define COLOR_PLAYER_ON_RED "\033[101m"
+#define COLOR_PLAYER_ON_BLUE "\033[30;104m"
+#define COLOR_PLAYER_ON_RED "\033[30;101m"
 
 // 팀 문자열
+#define PLAYER_CHAR "[]"
 #define RED_CHAR "<>"
 #define BLUE_CHAR "()"
 
