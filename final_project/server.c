@@ -8,6 +8,7 @@ pthread_mutex_t startMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t startCond = PTHREAD_COND_INITIALIZER;
 
 int port;
+int socks[8];
 
 board_pos *boardPositions = NULL;
 u_int16_t playerPositions[8];
@@ -168,7 +169,8 @@ int main(int argc, char *argv[]) {
     }
 
     pthread_detach(tid);
-    currentPlayerId++;
+
+    socks[currentPlayerId++] = clnt_tcp_sock;
   }  // 모든 클라이언트 접속 완료
 
   time_t currentTime = time(NULL);
@@ -198,6 +200,12 @@ int main(int argc, char *argv[]) {
   sleep(gameTime.startTime - time(NULL));
   printf("Game Start!");
   sleep(gameInitInfo.gameTime.tv_sec);
+  gameEndFlag = 1;
+
+  int blueCount = countBlue(&board_status, gameInitInfo.boardCount);
+  for (int i = 0; i < gameInitInfo.playerCount; i++) {
+    writen(socks[i], &blueCount, sizeof(int));
+  }
 
   free(boardPositions);
   return 0;
