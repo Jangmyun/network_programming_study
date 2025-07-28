@@ -221,7 +221,8 @@ void *recvThreadFunc(void *arg) {
     LockDisplay();
     playerPositions[playerId] = pa.position;
 
-    if ((boardIdx = findBoardIdxByGridIdx(pa.position)) != -1) {
+    if ((boardIdx = findBoardIdxByGridIdx(pa.position)) != -1 &&
+        pa.colorFlag != 2) {
       if (pa.colorFlag) {
         BIT_SET(board_status, boardIdx);
       } else {

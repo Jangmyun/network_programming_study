@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
         int ret = findBoardColorByGridIdx(playerPos);
 
         pa.position = newPlayerPos;
-        pa.colorFlag = ret;
+        pa.colorFlag = 2;
 
         writen(tcp_sock, &pa, sizeof(pa));
 
