@@ -4,6 +4,8 @@
 #define MULTICAST_GROUP_IP "225.192.0.10"
 #define TTL 20
 
+int port;
+
 board_pos *boardPositions = NULL;
 u_int16_t playerPositions[8];
 GameInitInfo gameInitInfo;
@@ -21,11 +23,12 @@ int setOptions(int argc, char *argv[], int *playerCount, int *gridSize,
                int *boardCount, int *gameSec, int *port);
 int setPlayerInitPos(u_int8_t id);
 int findBoardIdxByGridIdx(u_int16_t gridIdx);
-void *recvThreadFunc(void *arg);
+void *recvThreadFunc(void *arg);  // Client로부터 PlayerAction 받는 스레드
+void *sendThreadFunc(void *arg);  // Client에게 GameStatus 보내는 스레드
 
 int main(int argc, char *argv[]) {
   // default options
-  int port = 5123;
+  port = 5123;
   {
     int playerCount = 2;
     int gridSize = 32;
@@ -81,7 +84,6 @@ int main(int argc, char *argv[]) {
   socklen_t serv_tcp_addr_size, clnt_tcp_addr_size;
 
   int serv_udp_sock;
-  struct sockaddr_in serv_udp_addr;  // multicast group addr
 
   serv_tcp_sock = socket(PF_INET, SOCK_STREAM, 0);
   serv_udp_sock = socket(PF_INET, SOCK_DGRAM, 0);
@@ -92,11 +94,6 @@ int main(int argc, char *argv[]) {
   serv_tcp_addr.sin_family = AF_INET;
   serv_tcp_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   serv_tcp_addr.sin_port = htons(port);
-  // UDP
-  memset(&serv_udp_addr, 0, sizeof(serv_udp_addr));
-  serv_udp_addr.sin_family = AF_INET;
-  serv_udp_addr.sin_addr.s_addr = inet_addr(MULTICAST_GROUP_IP);
-  serv_udp_addr.sin_port = htons(port);  // TCP와 같은 포트
 
   // set socket options
   {
@@ -168,6 +165,21 @@ int main(int argc, char *argv[]) {
     currentPlayerId++;
   }
 
+  // Game Status 전송 스레드 생성
+  pthread_t sendTid;
+  {
+    int ret =
+        pthread_create(&sendTid, NULL, sendThreadFunc, (void *)&serv_udp_sock);
+    if (ret != 0) {
+      fprintf(stderr, "Server Thread pthread_create() failed: %s\n",
+              strerror(ret));
+    }
+
+    pthread_detach(sendTid);
+  }
+
+  sleep(gameInitInfo.gameTime.tv_sec);  // game 시간만큼 sleep
+
   free(boardPositions);
   return 0;
 }
@@ -206,7 +218,9 @@ void *recvThreadFunc(void *arg) {
   int boardIdx;
   while (1) {
     readn(sock, &pa, sizeof(PlayerAction));
+    LockDisplay();
     playerPositions[playerId] = pa.position;
+
     if ((boardIdx = findBoardIdxByGridIdx(pa.position)) != -1) {
       if (pa.colorFlag) {
         BIT_SET(board_status, boardIdx);
@@ -214,6 +228,7 @@ void *recvThreadFunc(void *arg) {
         BIT_CLR(board_status, boardIdx);
       }
     }
+    UnlockDisplay();
 #ifdef DEBUG
     printf("PlayerPos=%d , colorFlipped=%d\n", playerPositions[playerId],
            pa.colorFlag);
@@ -221,6 +236,36 @@ void *recvThreadFunc(void *arg) {
   }
 
   free(arg);
+  return NULL;
+}
+
+void *sendThreadFunc(void *arg) {
+  int sock = *(int *)arg;
+  struct sockaddr_in mc_group_addr;
+
+  memset(&mc_group_addr, 0, sizeof(mc_group_addr));
+  mc_group_addr.sin_family = AF_INET;
+  mc_group_addr.sin_addr.s_addr = inet_addr(MULTICAST_GROUP_IP);
+  mc_group_addr.sin_port = htons(port);  // TCP와 같은 포트
+
+  GameStatus gs;
+
+  while (1) {
+    // 현재 game status 복사 후 전송
+    memcpy(gs.playerPositions, playerPositions,
+           sizeof(u_int16_t) * gameInitInfo.playerCount);
+    gs.boardStatus = board_status;
+
+    sendto(sock, &gs, sizeof(GameStatus), 0, (struct sockaddr *)&mc_group_addr,
+           sizeof(mc_group_addr));
+
+#ifdef DEBUG
+    printf("game status sent\n");
+#endif
+
+    MySleep(200);  // 0.1초마다 전송
+  }
+
   return NULL;
 }
 
