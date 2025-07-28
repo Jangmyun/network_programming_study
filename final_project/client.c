@@ -34,6 +34,8 @@ void drawTime();
 void *drawGame(void *arg);
 void *recvGameStatus(void *arg);
 
+void drawGameResult(int sock);
+
 void timeout(int signum);
 
 int findBoardIdxByGridIdx(u_int16_t gridIdx);
@@ -44,6 +46,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Usage: %s <IP> <port>\n", argv[0]);
     exit(1);
   }
+
+  struct termios termState;
+  tcgetattr(STDIN_FILENO, &termState);
 
   int tcp_sock;
   struct sockaddr_in serv_tcp_addr;
@@ -275,8 +280,9 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  EnableCursor(1);
-  gotoxy(window_x, window_y);
+  drawGameResult(tcp_sock);
+
+  tcsetattr(STDIN_FILENO, TCSANOW, &termState);
   free(boardPositions);
   return 0;
 }
@@ -424,4 +430,18 @@ void timeout(int sig) {
     PrintXY(1, 5, "TIME OUT !!!!!!!!!!");
     gameEndFlag = 1;
   }
+}
+
+void drawGameResult(int sock) {
+  int blueCount;
+  readn(sock, &blueCount, sizeof(int));
+
+  int redCount = gameInitInfo.boardCount - blueCount;
+
+  char *resultStr = blueCount == redCount  ? "DRAW!!"
+                    : blueCount > redCount ? "BLUE WIN!!!"
+                                           : "RED WIN!!!";
+
+  PrintXY(1, 6, "Game Result : %s", resultStr);
+  PrintXY(1, 7, "BLUE:%d | RED:%d", blueCount, redCount);
 }
