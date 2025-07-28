@@ -25,6 +25,10 @@ typedef u_int16_t board_pos;
 #define COLOR_PLAYER_ON_BLUE "\033[104m"
 #define COLOR_PLAYER_ON_RED "\033[101m"
 
+// 팀 문자열
+#define RED_CHAR "<>"
+#define BLUE_CHAR "()"
+
 #define ENTER 13
 
 #include <arpa/inet.h>
