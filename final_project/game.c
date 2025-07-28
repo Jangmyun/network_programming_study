@@ -29,13 +29,14 @@ void drawGrid(int gridSize) {
     for (int j = 0; j < gridSize; j++) {
       gotoxy(i * 2 + 1, j + GRID_START_POS);
       printf("  ");
-      printf("\033[0K");
+      fflush(stdout);
     }
+    gotoxy(gridSize * 2, i + GRID_START_POS);
+    printf("%s\033[0K%s", COLOR_RESET, COLOR_BLANK);
   }
 
   clearColor();
 
-  fflush(stdout);
   pthread_mutex_unlock(&display_mutex);
   return;
 }

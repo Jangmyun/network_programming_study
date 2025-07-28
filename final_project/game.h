@@ -13,6 +13,7 @@ typedef u_int16_t board_pos;
 #define GRID_START_POS 7
 #define BLANK_PER_GRID 2  // 하나의 GRID를 공백 두개로 표현
 
+#define COLOR_RESET "\033[0m"
 #define COLOR_BLANK "\033[40m"
 #define COLOR_PLAYER "\033[47m"
 #define COLOR_RED_TEAM "\033[101m"
