@@ -21,6 +21,7 @@ void drawPlayer();
 void *drawGame(void *arg);
 
 int findBoardIdxByGridIdx(u_int16_t gridIdx);
+int findBoardColorByGridIdx(u_int16_t gridIdx);
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -169,7 +170,7 @@ int main(int argc, char *argv[]) {
       transPositionXY(&prev, playerPos, gameInitInfo.gridSize);
 
       if (newPlayerPos != playerPos) {
-        int ret = findBoardIdxByGridIdx(playerPos);
+        int ret = findBoardColorByGridIdx(playerPos);
         LockDisplay();
         switch (ret) {
           case -1:  // BLANK
@@ -243,7 +244,7 @@ void drawPlayer() {
 
   LockDisplay();
 
-  int ret = findBoardIdxByGridIdx(playerPos);
+  int ret = findBoardColorByGridIdx(playerPos);
   switch (ret) {
     case -1:  // BLANK
       setColor(COLOR_BLANK);
@@ -265,20 +266,27 @@ void drawPlayer() {
   UnlockDisplay();
 }
 
-// blank 위치면 -1, board 위치면 red, blue 각각 0, 1 리턴
 int findBoardIdxByGridIdx(u_int16_t gridIdx) {
-  if (BIT_ISSET(board_pos_bitarray, gridIdx)) {
-    for (int i = 0; i < gameInitInfo.boardCount; i++) {
-      if (boardPositions[i] == gridIdx) {
-        if (BIT_ISSET(board_status, i)) {
-          return 1;
-        } else {
-          return 0;
-        }
-      }
+  if (!BIT_ISSET(board_pos_bitarray, gridIdx)) return -1;
+
+  for (int i = 0; i < gameInitInfo.boardCount; i++) {
+    if (boardPositions[i] == gridIdx) {
+      return i;
     }
-  } else {
-    return -1;
   }
+  return -1;
+}
+
+// blank 위치면 -1, board 위치면 red, blue 각각 0, 1 리턴
+int findBoardColorByGridIdx(u_int16_t gridIdx) {
+  int boardIdx;
+  if ((boardIdx = findBoardIdxByGridIdx(gridIdx)) != -1) {
+    if (BIT_ISSET(board_status, boardIdx)) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
   return -1;
 }
