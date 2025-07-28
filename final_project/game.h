@@ -37,6 +37,7 @@ typedef u_int16_t board_pos;
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <time.h>
 
 // 1024 bit array structure for board positions
 typedef struct {
@@ -76,6 +77,11 @@ typedef struct _GameStatus {
   u_int16_t playerPositions[8];
   board_bitarray boardStatus;
 } GameStatus;
+
+typedef struct _GameStart {
+  time_t startTime;
+  time_t endTime;
+} GameTime;
 
 /* =====COMMON===== */
 
