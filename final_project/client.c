@@ -31,18 +31,57 @@ int main(int argc, char *argv[]) {
   int tcp_sock;
   struct sockaddr_in serv_tcp_addr;
 
+  int udp_sock;
+  struct sockaddr_in mc_group_addr;
+  socklen_t mc_group_addr_len;
+  struct ip_mreq mreq;
+
   int rw_len;
 
   tcp_sock = socket(PF_INET, SOCK_STREAM, 0);
+  udp_sock = socket(PF_INET, SOCK_DGRAM, 0);
 
+  // addr memset
+  // TCP
   memset(&serv_tcp_addr, 0, sizeof(serv_tcp_addr));
   serv_tcp_addr.sin_family = AF_INET;
   serv_tcp_addr.sin_addr.s_addr = inet_addr(argv[1]);
   serv_tcp_addr.sin_port = htons(atoi(argv[2]));
+  // UDP
+  memset(&mc_group_addr, 0, sizeof(mc_group_addr));
+  mc_group_addr.sin_family = AF_INET;
+  mc_group_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  mc_group_addr.sin_port = htons(atoi(argv[2]));
 
   if (connect(tcp_sock, (struct sockaddr *)&serv_tcp_addr,
               sizeof(serv_tcp_addr)) == -1) {
     perror("tcp socket connect() failed");
+    close(tcp_sock);
+    exit(1);
+  }
+
+  int optval = 1;
+  if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
+                 sizeof(optval))) {
+    perror("udp setsockopt() (SO_REUSEADDR) error");
+    close(udp_sock);
+    exit(1);
+  }
+
+  mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP_IP);
+  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+  if (setsockopt(udp_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *)&mreq,
+                 sizeof(mreq))) {
+    perror("udp setsockopt() (IP_ADD_MEMBERSHIP) error");
+    close(udp_sock);
+    exit(1);
+  }
+
+  // multicast receiver socket binding
+  if (bind(udp_sock, (struct sockaddr *)&mc_group_addr,
+           sizeof(mc_group_addr)) == -1) {
+    perror("udp socket bind() error");
+    close(udp_sock);
     exit(1);
   }
 
@@ -221,8 +260,8 @@ void drawPlayer() {
   }
   gotoxy(p.x, p.y);
   printf("[]");
-  clearColor();
   fflush(stdout);
+  clearColor();
   UnlockDisplay();
 }
 
