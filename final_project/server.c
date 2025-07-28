@@ -4,6 +4,9 @@
 #define MULTICAST_GROUP_IP "225.192.0.10"
 #define TTL 20
 
+pthread_mutex_t startMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t startCond = PTHREAD_COND_INITIALIZER;
+
 int port;
 
 board_pos *boardPositions = NULL;
@@ -11,6 +14,9 @@ u_int16_t playerPositions[8];
 GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;  // 어떤 위치가 board인지
 board_bitarray board_status;        // board들의 상태 (blue, red);
+
+GameTime gameTime;
+int gameEndFlag = 0;
 
 typedef struct _RecvThreadArg {
   int sock;
@@ -163,7 +169,18 @@ int main(int argc, char *argv[]) {
 
     pthread_detach(tid);
     currentPlayerId++;
-  }
+  }  // 모든 클라이언트 접속 완료
+
+  time_t currentTime = time(NULL);
+  gameTime.startTime = currentTime + 4;
+  gameTime.endTime = gameTime.startTime + gameInitInfo.gameTime.tv_sec;
+
+  printf("startTime=%ld, endTime=%ld\n", gameTime.startTime, gameTime.endTime);
+
+  // 모든 클라이언트 recv용 스레드에 broadcast로 게임 시작 정보를 전송하도록 함
+  pthread_mutex_lock(&startMutex);
+  pthread_cond_broadcast(&startCond);
+  pthread_mutex_unlock(&startMutex);
 
   // Game Status 전송 스레드 생성
   pthread_t sendTid;
@@ -178,7 +195,9 @@ int main(int argc, char *argv[]) {
     pthread_detach(sendTid);
   }
 
-  sleep(gameInitInfo.gameTime.tv_sec);  // game 시간만큼 sleep
+  sleep(gameTime.startTime - time(NULL));
+  printf("Game Start!");
+  sleep(gameInitInfo.gameTime.tv_sec);
 
   free(boardPositions);
   return 0;
@@ -213,10 +232,19 @@ void *recvThreadFunc(void *arg) {
     writen(sock, &playerPositions[i], sizeof(u_int16_t));
   }
 
+  // 서버 모두 접속까지 클라이언트별 GameTime 전송 대기
+  pthread_mutex_lock(&startMutex);
+  while (currentPlayerId < gameInitInfo.playerCount) {
+    pthread_cond_wait(&startCond, &startMutex);
+  }
+  pthread_mutex_unlock(&startMutex);
+  // 서버에서 설정한 gameTime 전송
+  writen(sock, &gameTime, sizeof(GameTime));
+
   // PlayerAction을 수신
   PlayerAction pa;
   int boardIdx;
-  while (1) {
+  while (!gameEndFlag) {
     readn(sock, &pa, sizeof(PlayerAction));
     LockDisplay();
     playerPositions[playerId] = pa.position;
@@ -251,7 +279,7 @@ void *sendThreadFunc(void *arg) {
 
   GameStatus gs;
 
-  while (1) {
+  while (!gameEndFlag) {
     // 현재 game status 복사 후 전송
     memcpy(gs.playerPositions, playerPositions,
            sizeof(u_int16_t) * gameInitInfo.playerCount);

@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <unistd.h>
 
 #include "console.h"
@@ -16,6 +17,9 @@ GameInitInfo gameInitInfo;
 board_bitarray board_pos_bitarray;
 board_bitarray board_status;
 
+GameTime gameTime;
+int gameEndFlag = 0;
+
 int window_x;
 int window_y;
 
@@ -24,8 +28,13 @@ u_int16_t playerPos;
 void drawBoards();
 void drawPlayer(u_int16_t pos, char *icon);
 void drawOtherPlayers();
+void drawTime();
+
+// Thread functions
 void *drawGame(void *arg);
 void *recvGameStatus(void *arg);
+
+void timeout(int signum);
 
 int findBoardIdxByGridIdx(u_int16_t gridIdx);
 int findBoardColorByGridIdx(u_int16_t gridIdx);
@@ -124,8 +133,6 @@ int main(int argc, char *argv[]) {
     rw_len = readn(tcp_sock, &playerPositions[i], sizeof(u_int16_t));
   }
 
-  gameInitInfo.boardPositions = boardPositions;
-
   // 받아온 초기 플레이어 위치로 playerPos 초기화
   playerPos = playerPositions[gameInitInfo.playerId];
 
@@ -141,6 +148,21 @@ int main(int argc, char *argv[]) {
 #endif
 
   clrscr();
+
+  LockDisplay();
+  gotoxy(1, 1);
+  printf(
+      "Board Flipper: \033[93mYour Team:%s\033[0m    (YOU=\"[]\", "
+      "\033[34mBLUE=\"()\"\033[0m, "
+      "\033[34mRED=\"<>\\033[0m)",
+      gameInitInfo.playerId % 2 == 0 ? "RED" : "BLUE");
+  UnlockDisplay();
+
+  // Game 시간 정보 수신
+  rw_len = readn(tcp_sock, &gameTime, sizeof(GameTime));
+
+  // timer 설정
+  signal(SIGALRM, timeout);
 
   pthread_t drawerTid;
   pthread_create(&drawerTid, NULL, drawGame, NULL);
@@ -158,7 +180,17 @@ int main(int argc, char *argv[]) {
 
   PlayerAction pa;
 
-  while (1) {
+  // game 전까지 게임 시작 대기
+  while (gameTime.startTime > time(NULL)) {
+    PrintXY(1, 3, "Game Ready... %d", gameTime.startTime - time(NULL));
+    MySleep(50);
+  }
+
+  PrintXY(1, 3, "Game Start !!!!!!!!!!");
+
+  alarm(gameInitInfo.gameTime.tv_sec);
+
+  while (!gameEndFlag) {
     if (kbhit()) {
       int key = getch();
 
@@ -252,15 +284,28 @@ int main(int argc, char *argv[]) {
 void *drawGame(void *arg) {
   int myId = gameInitInfo.playerId;
 
-  while (1) {
+  while (!gameEndFlag) {
     drawGrid(gameInitInfo.gridSize);
     drawBoards();
     drawOtherPlayers();
     drawPlayer(playerPos, PLAYER_CHAR);
+    drawTime();
     MySleep(100);
   }
 
   return NULL;
+}
+
+void drawTime() {
+  int leftTime = gameTime.endTime - time(NULL);
+  LockDisplay();
+  gotoxy(1, 5);
+  printf("\033[0K");
+  printf("TIME LEFT: \033[92m%ld\033[0m",
+         leftTime > gameInitInfo.gameTime.tv_sec ? gameInitInfo.gameTime.tv_sec
+                                                 : leftTime);
+
+  UnlockDisplay();
 }
 
 void *recvGameStatus(void *arg) {
@@ -273,7 +318,7 @@ void *recvGameStatus(void *arg) {
 
   int r_len;
 
-  while (1) {
+  while (!gameEndFlag) {
     r_len = recvfrom(t_arg->sock, &recv_gs, sizeof(GameStatus), 0,
                      (struct sockaddr *)&mc_group_addr, &mc_group_addr_size);
 
@@ -344,7 +389,7 @@ void drawPlayer(u_int16_t pos, char *icon) {
 void drawOtherPlayers() {
   for (int i = 0; i < gameInitInfo.playerCount; i++) {
     if (i != gameInitInfo.playerId) {
-      drawPlayer(playerPositions[i], (i % 2 == 0 ? BLUE_CHAR : RED_CHAR));
+      drawPlayer(playerPositions[i], (i % 2 == 0 ? RED_CHAR : BLUE_CHAR));
     }
   }
 }
@@ -372,4 +417,11 @@ int findBoardColorByGridIdx(u_int16_t gridIdx) {
   }
 
   return -1;
+}
+
+void timeout(int sig) {
+  if (sig == SIGALRM) {
+    PrintXY(1, 5, "TIME OUT !!!!!!!!!!");
+    gameEndFlag = 1;
+  }
 }
