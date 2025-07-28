@@ -5,6 +5,11 @@
 
 #define MULTICAST_GROUP_IP "225.192.0.10"
 
+typedef struct _RecvThreadArg {
+  int sock;
+  char ipAddr[20];
+} RecvThreadArg;
+
 board_pos *boardPositions = NULL;
 u_int16_t playerPositions[8];
 GameInitInfo gameInitInfo;
@@ -19,6 +24,7 @@ u_int16_t playerPos;
 void drawBoards();
 void drawPlayer();
 void *drawGame(void *arg);
+void *recvGameStatus(void *arg);
 
 int findBoardIdxByGridIdx(u_int16_t gridIdx);
 int findBoardColorByGridIdx(u_int16_t gridIdx);
@@ -62,6 +68,13 @@ int main(int argc, char *argv[]) {
   }
 
   int optval = 1;
+  if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEPORT, (char *)&optval,
+                 sizeof(optval))) {
+    perror("udp setsockopt() (SO_REUSEPORT) error");
+    close(udp_sock);
+    exit(1);
+  }
+
   if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
                  sizeof(optval))) {
     perror("udp setsockopt() (SO_REUSEADDR) error");
@@ -132,6 +145,15 @@ int main(int argc, char *argv[]) {
   pthread_create(&drawerTid, NULL, drawGame, NULL);
 
   pthread_detach(drawerTid);
+
+  RecvThreadArg *arg = (RecvThreadArg *)malloc(sizeof(RecvThreadArg));
+  arg->sock = udp_sock;
+  strncpy(arg->ipAddr, argv[1], sizeof(arg->ipAddr) - 1);
+
+  pthread_t recvTid;
+  pthread_create(&recvTid, NULL, recvGameStatus, (void *)arg);
+
+  pthread_detach(recvTid);
 
   PlayerAction pa;
 
@@ -236,6 +258,36 @@ void *drawGame(void *arg) {
     MySleep(100);
   }
 
+  return NULL;
+}
+
+void *recvGameStatus(void *arg) {
+  RecvThreadArg *t_arg = (RecvThreadArg *)arg;
+
+  GameStatus recv_gs;
+
+  struct sockaddr_in mc_group_addr;
+  socklen_t mc_group_addr_size = sizeof(struct sockaddr_in);
+
+  int r_len;
+
+  while (1) {
+    r_len = recvfrom(t_arg->sock, &recv_gs, sizeof(GameStatus), 0,
+                     (struct sockaddr *)&mc_group_addr, &mc_group_addr_size);
+
+    char *recv_ipStr = inet_ntoa(mc_group_addr.sin_addr);
+
+    // TODO: 멀티 캐스팅 ip
+    // if (!strcmp(recv_ipStr, t_arg->ipAddr)) {
+    PrintXY(1, 56, "recvfrom");
+
+    memcpy(playerPositions, recv_gs.playerPositions,
+           sizeof(u_int16_t) * gameInitInfo.playerCount);
+    board_status = recv_gs.boardStatus;
+    // }
+  }
+
+  free(arg);
   return NULL;
 }
 
