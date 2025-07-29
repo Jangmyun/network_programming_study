@@ -442,6 +442,6 @@ void drawGameResult(int sock) {
                     : blueCount > redCount ? "BLUE WIN!!!"
                                            : "RED WIN!!!";
 
-  PrintXY(1, 6, "Game Result : %s", resultStr);
-  PrintXY(1, 7, "BLUE:%d | RED:%d", blueCount, redCount);
+  PrintXY(1, 40, "Game Result : %s", resultStr);
+  PrintXY(1, 41, "BLUE:%d | RED:%d", blueCount, redCount);
 }
