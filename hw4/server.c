@@ -141,6 +141,10 @@ void *keywordHandler(void *arg) {
   int rw_len;
   size_t wordLen = 0;
   rw_len = readn(sock, &wordLen, sizeof(size_t));
+  if (rw_len <= 0) {
+    printf("Client %d Disconnected\n", sock);
+    return NULL;
+  }
 
 #ifdef DEBUG
   printf("wordLen=%zu, rw_len=%d\n", wordLen, rw_len);
@@ -148,6 +152,10 @@ void *keywordHandler(void *arg) {
 
   char buf[BUF_SIZE];
   rw_len = readn(sock, buf, wordLen);
+  if (rw_len <= 0) {
+    printf("Client %d Disconnected\n", sock);
+    return NULL;
+  }
   buf[wordLen] = '\0';
 
 #ifdef DEBUG
@@ -159,6 +167,10 @@ void *keywordHandler(void *arg) {
 
   // 매칭된 keywords의 개수 송신
   rw_len = writen(sock, &matchedCount, sizeof(int));
+  if (rw_len <= 0) {
+    printf("Client %d Disconnected\n", sock);
+    return NULL;
+  }
 
   // 송신한 keywords 개수만큼 word의 길이와 word와 searchCount 전송
   for (int i = 0; i < matchedCount; i++) {
